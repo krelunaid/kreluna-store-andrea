@@ -5,6 +5,7 @@ import {
   BarChart3,
   Bell,
   Boxes,
+  Building2,
   Check,
   ChevronDown,
   ChevronRight,
@@ -31,6 +32,7 @@ import {
   Sparkles,
   Star,
   Trash2,
+  UserRound,
   UsersRound,
   WandSparkles,
   X,
@@ -257,6 +259,7 @@ const filterOptions = [
 ] as const;
 
 type FilterId = (typeof filterOptions)[number]["id"];
+type Audience = "personal" | "business";
 
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
@@ -354,6 +357,7 @@ export default function HomePage() {
   const [activeNav, setActiveNav] = useState("home");
   const [activeCategory, setActiveCategory] = useState("all");
   const [activeFilter, setActiveFilter] = useState<FilterId>("all");
+  const [audience, setAudience] = useState<Audience>("personal");
   const [query, setQuery] = useState("");
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [cart, setCart] = useState<string[]>([]);
@@ -402,6 +406,17 @@ export default function HomePage() {
     setActiveFilter("all");
     setActiveNav("categorie");
     window.setTimeout(() => scrollTo("prodotti"), 20);
+  };
+
+  const chooseAudience = (nextAudience: Audience) => {
+    setAudience(nextAudience);
+    setActiveCategory("all");
+    setActiveFilter(nextAudience === "business" ? "popular" : "all");
+    announce(
+      nextAudience === "business"
+        ? "Vista Per la tua azienda selezionata"
+        : "Vista Per te selezionata",
+    );
   };
 
   const chooseSearchResult = (product: Product) => {
@@ -666,6 +681,52 @@ export default function HomePage() {
             </div>
           </section>
 
+          <section className="audience-section" aria-labelledby="audience-title">
+            <div className="audience-heading">
+              <div>
+                <span className="section-kicker">SCEGLI IL TUO PERCORSO</span>
+                <h2 id="audience-title">Come userai Kreluna Store?</h2>
+              </div>
+              <p>Seleziona il profilo per vedere le soluzioni più adatte alle tue esigenze.</p>
+            </div>
+
+            <div className="audience-grid" role="radiogroup" aria-label="Tipo di utilizzo">
+              <button
+                type="button"
+                role="radio"
+                aria-checked={audience === "personal"}
+                className={`audience-card audience-card--personal ${audience === "personal" ? "audience-card--active" : ""}`}
+                onClick={() => chooseAudience("personal")}
+              >
+                <span className="audience-icon"><UserRound size={25} /></span>
+                <span className="audience-copy">
+                  <small>PROFESSIONISTI E CREATOR</small>
+                  <strong>Per te</strong>
+                  <span>App immediate per organizzarti, creare e far crescere il tuo lavoro.</span>
+                  <span className="audience-tags"><em><CircleCheck size={13} /> Facili da usare</em><em><Zap size={13} /> Attivazione rapida</em></span>
+                </span>
+                <span className="audience-select"><Check size={17} /></span>
+              </button>
+
+              <button
+                type="button"
+                role="radio"
+                aria-checked={audience === "business"}
+                className={`audience-card audience-card--business ${audience === "business" ? "audience-card--active" : ""}`}
+                onClick={() => chooseAudience("business")}
+              >
+                <span className="audience-icon"><Building2 size={25} /></span>
+                <span className="audience-copy">
+                  <small>TEAM, PMI E IMPRESE</small>
+                  <strong>Per la tua azienda</strong>
+                  <span>Soluzioni complete per coordinare persone, vendite e operazioni.</span>
+                  <span className="audience-tags"><em><UsersRound size={13} /> Per tutto il team</em><em><BarChart3 size={13} /> Controllo centralizzato</em></span>
+                </span>
+                <span className="audience-select"><Check size={17} /></span>
+              </button>
+            </div>
+          </section>
+
           <section id="categorie" className="section-block categories-section" aria-labelledby="categories-title">
             <div className="section-heading">
               <div>
@@ -702,9 +763,9 @@ export default function HomePage() {
           <section id="prodotti" className="section-block products-section" aria-labelledby="products-title">
             <div className="section-heading products-heading">
               <div>
-                <span className="section-kicker">SCELTI PER TE</span>
-                <h2 id="products-title">App in evidenza</h2>
-                <p>Soluzioni verificate, semplici da attivare e senza sorprese.</p>
+                <span className="section-kicker">{audience === "personal" ? "SCELTI PER TE" : "PER IL TUO BUSINESS"}</span>
+                <h2 id="products-title">{audience === "personal" ? "App scelte per te" : "Soluzioni per la tua azienda"}</h2>
+                <p>{audience === "personal" ? "Strumenti verificati, semplici da attivare e senza sorprese." : "Software affidabili per far lavorare meglio il tuo team e la tua impresa."}</p>
               </div>
               <div className="sort-button" aria-hidden="true">
                 <SlidersHorizontal size={16} /> Più rilevanti <ChevronDown size={14} />
@@ -916,8 +977,14 @@ export default function HomePage() {
       </nav>
 
       {cartOpen && (
-        <div className="drawer-overlay" role="presentation" onMouseDown={() => setCartOpen(false)}>
-          <aside className="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-title" onMouseDown={(event) => event.stopPropagation()}>
+        <div
+          className="drawer-overlay"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setCartOpen(false);
+          }}
+        >
+          <aside className="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-title">
             <div className="drawer-header">
               <div><span>IL TUO CARRELLO</span><h2 id="cart-title">Pronto da attivare</h2></div>
               <button type="button" onClick={() => setCartOpen(false)} aria-label="Chiudi carrello"><X size={20} /></button>
@@ -956,8 +1023,14 @@ export default function HomePage() {
       )}
 
       {selectedProduct && (
-        <div className="modal-overlay" role="presentation" onMouseDown={() => setSelectedProduct(null)}>
-          <section className="product-modal" role="dialog" aria-modal="true" aria-labelledby="modal-product-title" onMouseDown={(event) => event.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setSelectedProduct(null);
+          }}
+        >
+          <section className="product-modal" role="dialog" aria-modal="true" aria-labelledby="modal-product-title">
             <button className="modal-close" type="button" onClick={() => setSelectedProduct(null)} aria-label="Chiudi dettagli"><X size={20} /></button>
             <div className="modal-product-heading">
               {(() => { const Icon = selectedProduct.icon; return <span className={`product-icon tone-${selectedProduct.iconTone}`}><Icon size={30} /></span>; })()}

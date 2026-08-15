@@ -13,9 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    "https://kreluna-store-andrea.andreagadducci.chatgpt.site",
+  ),
   title: "Kreluna Store — Tutto il software che ti fa andare avanti",
   description:
-    "Scopri app e strumenti selezionati per far crescere la tua attività, tutti in un unico marketplace.",
+    "Scopri app e strumenti selezionati per te o per la tua azienda, tutti in un unico marketplace.",
   keywords: [
     "Kreluna Store",
     "software per aziende",
@@ -24,9 +27,23 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Kreluna Store",
-    description: "Un unico marketplace. Infinite soluzioni per il tuo business.",
+    description: "Per te. Per la tua azienda. Infinite soluzioni in un unico marketplace.",
     type: "website",
     locale: "it_IT",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Kreluna Store — Per te. Per la tua azienda.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Kreluna Store",
+    description: "Per te. Per la tua azienda.",
+    images: ["/og.png"],
   },
   icons: {
     icon: "/favicon.svg",

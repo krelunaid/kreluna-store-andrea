@@ -34,6 +34,8 @@ test("renders the Kreluna Store experience", async () => {
   assert.match(html, /<title>Kreluna Store/);
   assert.match(html, /Trova il software/);
   assert.match(html, /Categorie principali/);
+  assert.match(html, /Per te/);
+  assert.match(html, /Per la tua azienda/);
   assert.match(html, /InvoiceFlow/);
   assert.match(html, /Kreluna\+/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|Building your site/i);
