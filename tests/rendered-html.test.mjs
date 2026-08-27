@@ -61,3 +61,17 @@ test("keeps starter preview infrastructure removed", async () => {
   assert.doesNotMatch(page, /codex-preview|SkeletonPreview/);
   await assert.rejects(access(new URL("../app/_sites-preview", templateRoot)));
 });
+
+test("delegates Risonix purchases to the protected Kreluna checkout", async () => {
+  const [route, catalog] = await Promise.all([
+    readFile(new URL("../app/api/checkout/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/checkout-catalog.ts", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(catalog, /canonicalCheckoutUrl:\s*"https:\/\/www\.kreluna\.it\/risonix\/acquista"/);
+  assert.match(route, /delegated:\s*true/);
+  assert.ok(
+    route.indexOf("const canonicalItems") < route.indexOf("const runtimeEnv"),
+    "Risonix must be delegated before the generic Stripe checkout is configured",
+  );
+});

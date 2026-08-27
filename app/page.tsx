@@ -444,7 +444,7 @@ const products: Product[] = [
     name: "Risonix",
     category: "Musica & audio",
     categoryId: "music-audio",
-    description: "Riconosci i brani della tua raccolta con impronta acustica e confronto locale.",
+    description: "Riconosci i brani della tua raccolta con impronta acustica su Windows 10/11 e Mac Apple Silicon.",
     price: 49,
     platformSupport: ["windows", "mac"],
     badge: "Kreluna originale",
