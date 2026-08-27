@@ -114,7 +114,6 @@ export async function POST(request: Request) {
   form.append("mode", "payment");
   form.append("success_url", getRedirectUrl(request, "/?checkout=success"));
   form.append("cancel_url", getRedirectUrl(request, "/?checkout=cancel"));
-  form.append("payment_method_types[]", "card");
   encodeLineItems(form, validItems);
 
   const checkoutRequest = await fetch("https://api.stripe.com/v1/checkout/sessions", {
