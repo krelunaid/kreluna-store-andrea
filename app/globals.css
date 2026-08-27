@@ -757,6 +757,15 @@ input:focus-visible {
   transform: translateY(-1px);
 }
 
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.button:disabled:hover {
+  transform: none;
+}
+
 .button--primary {
   color: #fff;
   background: linear-gradient(135deg, #2c6bf2, #1d55d1);

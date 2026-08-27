@@ -36,6 +36,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { checkoutCatalogMap } from "./lib/checkout-catalog";
 
 type Locale = "it" | "en";
 
@@ -424,6 +425,7 @@ export default function HomePage() {
   const [launchMessage, setLaunchMessage] = useState("");
   const [launchAudience, setLaunchAudience] = useState<"te" | "azienda">("te");
   const [launchSuccess, setLaunchSuccess] = useState("");
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const toastTimer = useRef<number | null>(null);
 
   useEffect(() => {
@@ -442,6 +444,21 @@ export default function HomePage() {
     else url.searchParams.delete("lang");
     window.history.replaceState({}, "", url);
   });
+
+  useEffect(() => {
+    const checkoutState = new URLSearchParams(window.location.search).get("checkout");
+    if (checkoutState === "success") {
+      announce("Pagamento completato. Attivazione confermata, troverai una mail a breve.");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("checkout");
+      window.history.replaceState({}, "", url);
+    } else if (checkoutState === "cancel") {
+      announce("Checkout annullato. Ritorna al carrello per riprovare.");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("checkout");
+      window.history.replaceState({}, "", url);
+    }
+  }, []);
 
   const filteredProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("it");
@@ -522,6 +539,46 @@ export default function HomePage() {
       announce(`${product.name} aggiunto al carrello`);
       return [...current, product.id];
     });
+  };
+
+  const startCheckout = async (productIds: string[]) => {
+    if (!productIds.length) {
+      announce("Il carrello è vuoto.");
+      return;
+    }
+    const unsupportedItems = productIds.filter((id) => !checkoutCatalogMap[id]);
+    if (unsupportedItems.length > 0) {
+      announce("Alcuni prodotti non sono configurati per il pagamento.");
+      return;
+    }
+
+    if (checkoutLoading) return;
+
+    setCheckoutLoading(true);
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: productIds.map((id) => ({ id, quantity: 1 })),
+        }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        checkoutUrl?: string;
+        error?: string;
+      };
+
+      if (!response.ok || !payload.checkoutUrl) {
+        announce(payload.error ?? "Errore durante la creazione del checkout.");
+        return;
+      }
+
+      window.location.href = payload.checkoutUrl;
+    } catch {
+      announce("Errore di rete durante il collegamento al checkout.");
+    } finally {
+      setCheckoutLoading(false);
+    }
   };
 
   const openPopular = () => {
@@ -1125,7 +1182,11 @@ export default function HomePage() {
                   <li><Check size={14} /> 5 € di crediti inclusi</li>
                   <li><Check size={14} /> Assistenza prioritaria</li>
                 </ul>
-                <button type="button" onClick={() => announce("Piano Basic selezionato: lo collegheremo al checkout nel prossimo passaggio") }>
+                <button
+                  type="button"
+                  disabled={checkoutLoading}
+                  onClick={() => startCheckout(["kreluna-plus-basic"])}
+                >
                   Attiva Basic
                 </button>
               </article>
@@ -1138,7 +1199,11 @@ export default function HomePage() {
                   <li><Check size={14} /> 20 € di crediti inclusi</li>
                   <li><Check size={14} /> Funzioni esclusive</li>
                 </ul>
-                <button type="button" onClick={() => announce("Piano Pro selezionato: lo collegheremo al checkout nel prossimo passaggio") }>
+                <button
+                  type="button"
+                  disabled={checkoutLoading}
+                  onClick={() => startCheckout(["kreluna-plus-pro"])}
+                >
                   Attiva Pro
                 </button>
               </article>
@@ -1247,8 +1312,13 @@ export default function HomePage() {
               <div className="drawer-footer">
                 <div><span>Totale del carrello</span><strong>{cartTotal.toFixed(2).replace(".", ",")} €</strong></div>
                 <p><ShieldCheck size={14} /> Prezzi e condizioni sono mostrati prima del pagamento.</p>
-                <button type="button" onClick={() => announce("Il checkout sarà collegato nel prossimo passaggio") }>
-                  Procedi all’attivazione <ArrowRight size={17} />
+                <button
+                  type="button"
+                  disabled={checkoutLoading}
+                  onClick={() => startCheckout(cart)}
+                >
+                  {checkoutLoading ? "Preparazione checkout..." : "Procedi all’attivazione"}
+                  {!checkoutLoading && <ArrowRight size={17} />}
                 </button>
               </div>
             )}
