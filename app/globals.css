@@ -1361,7 +1361,8 @@ input:focus-visible {
   box-shadow: var(--shadow-sm);
 }
 
-.launch-form label {
+.launch-form label,
+.launch-form-label {
   color: #2c3e5a;
   font-size: 9.8px;
   font-weight: 760;
@@ -3156,7 +3157,8 @@ input:focus-visible {
     width: 100%;
   }
 
-  .launch-form label {
+  .launch-form label,
+  .launch-form-label {
     color: #b2cae9;
   }
 

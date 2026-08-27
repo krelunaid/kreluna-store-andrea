@@ -428,7 +428,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("lang") === "en") {
-      setLocale("en");
+      queueMicrotask(() => setLocale("en"));
     }
   }, []);
 
@@ -920,7 +920,7 @@ export default function HomePage() {
                   required
                 />
 
-                <label>Interessa a:</label>
+                <span className="launch-form-label">Interessa a:</span>
                 <div className="launch-audience">
                   <label>
                     <input
@@ -1247,7 +1247,13 @@ export default function HomePage() {
               <div className="drawer-footer">
                 <div><span>Totale del carrello</span><strong>{cartTotal.toFixed(2).replace(".", ",")} €</strong></div>
                 <p><ShieldCheck size={14} /> Prezzi e condizioni sono mostrati prima del pagamento.</p>
-                <button type="button" onClick={() => announce("Il checkout sarà collegato nel prossimo passaggio") }>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const language = locale === "en" ? "?lang=en" : "";
+                    window.location.assign(`https://www.kreluna.it/risonix/acquista${language}`);
+                  }}
+                >
                   Procedi all’attivazione <ArrowRight size={17} />
                 </button>
               </div>
