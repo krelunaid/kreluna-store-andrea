@@ -39,7 +39,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
 
 type Product = {
   id: string;
@@ -258,6 +258,12 @@ const filterOptions = [
   { id: "trial", label: "Prova gratuita" },
 ] as const;
 
+const launchBenefits = [
+  { icon: ShieldCheck, text: "Gestione centralizzata ruoli, permessi e team" },
+  { icon: Clock3, text: "Avvio rapido in pochi giorni, niente sviluppo complesso" },
+  { icon: RefreshCcw, text: "Aggiornamenti continui e rollout semplificato" },
+] as const;
+
 type FilterId = (typeof filterOptions)[number]["id"];
 type Audience = "personal" | "business";
 
@@ -365,6 +371,10 @@ export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [toast, setToast] = useState("");
+  const [launchName, setLaunchName] = useState("");
+  const [launchEmail, setLaunchEmail] = useState("");
+  const [launchMessage, setLaunchMessage] = useState("");
+  const [launchSuccess, setLaunchSuccess] = useState("");
   const toastTimer = useRef<number | null>(null);
 
   const filteredProducts = useMemo(() => {
@@ -453,6 +463,23 @@ export default function HomePage() {
     setActiveFilter("popular");
     setActiveCategory("all");
     window.setTimeout(() => scrollTo("prodotti"), 20);
+  };
+
+  const handleLaunchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!launchName.trim() || !launchEmail.trim() || !launchMessage.trim()) {
+      announce("Compila nome, email e messaggio per restare aggiornato");
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(launchEmail.trim())) {
+      announce("Inserisci un indirizzo email valido");
+      return;
+    }
+    setLaunchSuccess("Grazie! Ti avviseremo non appena apriamo le iscrizioni.");
+    announce("Richiesta inviata con successo.");
+    setLaunchName("");
+    setLaunchEmail("");
+    setLaunchMessage("");
   };
 
   const handleNav = (id: string) => {
@@ -724,6 +751,97 @@ export default function HomePage() {
                 </span>
                 <span className="audience-select"><Check size={17} /></span>
               </button>
+            </div>
+          </section>
+
+          <section id="lancio" className="section-block launch-section" aria-labelledby="launch-title">
+            <div className="section-heading launch-heading">
+              <div>
+                <span className="section-kicker">Novità per aziende</span>
+                <h2 id="launch-title">Nuovo servizio in arrivo</h2>
+                <p>Stiamo per lanciare il nostro servizio premium per aziende.</p>
+              </div>
+              <button
+                type="button"
+                className="text-link"
+                onClick={() => scrollTo("kreluna-plus")}
+              >
+                Scopri come funziona <ArrowRight size={16} />
+              </button>
+            </div>
+
+            <div className="launch-layout">
+              <article className="launch-card" aria-label="Anteprima servizio">
+                <span className="launch-badge">Prossimamente</span>
+                <h3>Versione Business di Kreluna Store</h3>
+                <p>
+                  Stiamo preparando una piattaforma completa per team e brand, con gestione
+                  prodotti, ordini e supporto dedicato, pensata per chi lavora in gruppo.
+                </p>
+                <div className="launch-benefits">
+                  {launchBenefits.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <span key={item.text}>
+                        <Icon size={16} /> {item.text}
+                      </span>
+                    );
+                  })}
+                </div>
+                <div className="launch-dates">
+                  <span>Prossimamente</span>
+                  <strong>Entro 30 ottobre 2026</strong>
+                </div>
+                <div className="launch-actions">
+                  <button type="button" className="button button--primary" onClick={() => announce("Il flusso servizio verrà collegato nel prossimo passaggio")}>
+                    Scopri come funziona
+                  </button>
+                  <button type="button" className="button button--secondary" onClick={() => announce("Puoi contattarci dal form qui sotto")}>
+                    Contattaci
+                  </button>
+                </div>
+              </article>
+
+              <form className="launch-form" onSubmit={handleLaunchSubmit}>
+                <label htmlFor="launch-name">Nome</label>
+                <input
+                  id="launch-name"
+                  type="text"
+                  value={launchName}
+                  onChange={(event) => setLaunchName(event.target.value)}
+                  placeholder="Il tuo nome"
+                  required
+                />
+
+                <label htmlFor="launch-email">Email</label>
+                <input
+                  id="launch-email"
+                  type="email"
+                  value={launchEmail}
+                  onChange={(event) => setLaunchEmail(event.target.value)}
+                  placeholder="nome@azienda.it"
+                  required
+                />
+
+                <label htmlFor="launch-message">Ti interessa anche questo messaggio?</label>
+                <textarea
+                  id="launch-message"
+                  value={launchMessage}
+                  onChange={(event) => setLaunchMessage(event.target.value)}
+                  placeholder="Scrivici il tuo settore e riceverai un aggiornamento prioritario."
+                  required
+                />
+
+                <button type="submit" className="button button--primary">
+                  Ti facciamo sapere quando parte
+                </button>
+
+                {launchSuccess && (
+                  <p className="launch-success" role="status">
+                    {launchSuccess}
+                  </p>
+                )}
+              </form>
             </div>
           </section>
 
