@@ -8,7 +8,22 @@ type CheckoutItemInput = {
 
 type CheckoutInput = {
   items?: CheckoutItemInput[];
+  demo?: boolean | "true" | "false" | 0 | 1 | string;
 };
+
+type CheckoutEnv = {
+  STRIPE_SECRET_KEY?: string;
+  ALLOW_DEMO_CHECKOUT?: string;
+  NODE_ENV?: string;
+};
+
+function toBoolean(value: unknown): boolean {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+  if (typeof value !== "string") return false;
+  const normalized = value.trim().toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
+}
 
 function encodeLineItems(form: URLSearchParams, items: CheckoutItemInput[]) {
   items.forEach((item, index) => {
@@ -43,6 +58,8 @@ function getRedirectUrl(request: Request, path: string) {
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as CheckoutInput;
   const items = Array.isArray(body.items) ? body.items : [];
+  const requestUrl = new URL(request.url);
+  const query = requestUrl.searchParams;
 
   if (!items.length) {
     return Response.json({ error: "Il carrello è vuoto." }, { status: 400 });
@@ -66,10 +83,24 @@ export async function POST(request: Request) {
     );
   }
 
-  const runtimeEnv = env as { STRIPE_SECRET_KEY?: string };
+  const runtimeEnv = (env as CheckoutEnv) ?? {};
+  const requestedDemo = toBoolean(body.demo) || query.get("demo") === "1";
+  const demoByDefault =
+    toBoolean(runtimeEnv.ALLOW_DEMO_CHECKOUT) ||
+    (!runtimeEnv.STRIPE_SECRET_KEY && runtimeEnv.NODE_ENV !== "production");
+
   const secretKey = runtimeEnv.STRIPE_SECRET_KEY;
 
   if (!secretKey) {
+    if (requestedDemo || demoByDefault) {
+      const demoTx = `demo-${Date.now()}-${Math.random().toString(16).slice(2, 7)}`;
+      const successUrl = getRedirectUrl(
+        request,
+        `/?checkout=success&demo=1&tx=${encodeURIComponent(demoTx)}`,
+      );
+      return Response.json({ checkoutUrl: successUrl, demo: true });
+    }
+
     return Response.json(
       {
         error:

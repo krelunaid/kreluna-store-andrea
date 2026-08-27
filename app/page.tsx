@@ -289,7 +289,7 @@ function translatedText(value: string, locale: Locale) {
   const leading = value.match(/^\s*/)?.[0] ?? "";
   const trailing = value.match(/\s*$/)?.[0] ?? "";
   const core = value.trim();
-  const fallback = fallbackLocaleCopies.en[core];
+  const fallback = locale === "it" ? undefined : fallbackLocaleCopies.en[core];
   let translated = dictionary[core] ?? fallback ?? core;
 
   if (locale === "en") {
@@ -628,17 +628,25 @@ export default function HomePage() {
   }, [locale, platformFilter]);
 
   useEffect(() => {
-    const checkoutState = new URLSearchParams(window.location.search).get("checkout");
+    const params = new URLSearchParams(window.location.search);
+    const checkoutState = params.get("checkout");
+    const isDemoCheckout = params.get("demo") === "1";
     let announcement = "";
     if (checkoutState === "success") {
-      announcement = "Pagamento completato. Attivazione confermata, troverai una mail a breve.";
+      announcement = isDemoCheckout
+        ? "Attivazione completata in modalità demo: l'integrazione con Stripe non è attiva."
+        : "Pagamento completato. Attivazione confermata, troverai una mail a breve.";
       const url = new URL(window.location.href);
       url.searchParams.delete("checkout");
+      url.searchParams.delete("demo");
+      url.searchParams.delete("tx");
       window.history.replaceState({}, "", url);
     } else if (checkoutState === "cancel") {
       announcement = "Checkout annullato. Ritorna al carrello per riprovare.";
       const url = new URL(window.location.href);
       url.searchParams.delete("checkout");
+      url.searchParams.delete("demo");
+      url.searchParams.delete("tx");
       window.history.replaceState({}, "", url);
     }
 
