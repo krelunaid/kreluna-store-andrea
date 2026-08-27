@@ -160,6 +160,15 @@ const englishCopy: Record<string, string> = {
   "Prova a cambiare ricerca o a rimuovere i filtri selezionati.": "Try changing your search or removing the selected filters.",
   "Azzera i filtri": "Clear filters",
   "IL TUO VANTAGGIO ESCLUSIVO": "YOUR EXCLUSIVE BENEFIT",
+  "PRESTO IN ARRIVO": "COMING SOON",
+  "Presto in arrivo": "Coming soon",
+  "Kreluna+ sta arrivando": "Kreluna+ is coming",
+  "Due piani pensati per darti più valore su ogni prodotto Kreluna. Stiamo preparando ogni dettaglio prima del lancio.": "Two plans designed to give you more value from every Kreluna product. We are refining every detail before launch.",
+  "Vantaggi previsti al lancio": "Benefits planned for launch",
+  "ANTEPRIMA DEL PIANO": "PLAN PREVIEW",
+  "Più vantaggi": "More benefits",
+  "Prezzo previsto": "Expected price",
+  "I piani Kreluna+ non sono ancora acquistabili. Prezzi e condizioni saranno confermati prima del lancio.": "Kreluna+ plans are not available for purchase yet. Prices and terms will be confirmed before launch.",
   "Più valore. Più vantaggi. Sempre con te.": "More value. More benefits. Always with you.",
   "Sconti sulle app, crediti mensili e assistenza prioritaria in un unico piano.": "App discounts, monthly credits and priority support in one plan.",
   "Sconti fino al 25%": "Discounts up to 25%",
@@ -214,6 +223,56 @@ const englishCopy: Record<string, string> = {
 const italianCopy = Object.fromEntries(
   Object.entries(englishCopy).map(([italian, english]) => [english, italian]),
 );
+
+type Platform = "windows" | "mac" | "all";
+
+const PLATFORM_STORAGE_KEY = "kreluna-platform";
+const PLATFORM_OPTIONS: Record<
+  Platform,
+  { label: string; ariaLabel: string; shortLabel: string }
+> = {
+  windows: { label: "Windows", ariaLabel: "Windows", shortLabel: "WIN" },
+  mac: { label: "Mac", ariaLabel: "Mac", shortLabel: "MAC" },
+  all: { label: "Tutti", ariaLabel: "Tutte le piattaforme", shortLabel: "ALL" },
+};
+
+const PLATFORM_COMPATIBILITY_TEXT: Record<Locale, { windows: string; mac: string; all: string; windowsLabel: string; macLabel: string }> = {
+  it: {
+    windows: "Solo Windows",
+    mac: "Solo macOS",
+    all: "Windows e macOS",
+    windowsLabel: "Windows",
+    macLabel: "macOS",
+  },
+  en: {
+    windows: "Windows only",
+    mac: "macOS only",
+    all: "Windows and macOS",
+    windowsLabel: "Windows",
+    macLabel: "macOS",
+  },
+  fr: {
+    windows: "Windows uniquement",
+    mac: "macOS uniquement",
+    all: "Windows et macOS",
+    windowsLabel: "Windows",
+    macLabel: "macOS",
+  },
+  de: {
+    windows: "Nur Windows",
+    mac: "Nur macOS",
+    all: "Windows und macOS",
+    windowsLabel: "Windows",
+    macLabel: "macOS",
+  },
+  es: {
+    windows: "Solo Windows",
+    mac: "Solo macOS",
+    all: "Windows y macOS",
+    windowsLabel: "Windows",
+    macLabel: "macOS",
+  },
+};
 
 const fallbackLocaleCopies: Record<Locale, Record<string, string>> = {
   it: italianCopy,
@@ -285,6 +344,49 @@ function resolveInitialLocale(): Locale {
   return detectBrowserLocale();
 }
 
+function normalizePlatform(value: string | null | undefined): Platform | null {
+  if (!value) return null;
+  const normalized = value.toLowerCase();
+  if (normalized === "win" || normalized === "windows") return "windows";
+  if (normalized === "mac" || normalized === "macos" || normalized === "darwin" || normalized === "osx")
+    return "mac";
+  if (normalized === "all" || normalized === "both") return "all";
+  return null;
+}
+
+function detectPlatform(): Platform {
+  const ua = window.navigator.userAgent ?? "";
+  const userAgentData = (window.navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData;
+  const platformValue = userAgentData?.platform?.toLowerCase();
+  const normalizedPlatform = normalizePlatform(platformValue);
+  if (normalizedPlatform) return normalizedPlatform;
+
+  if (window.navigator.platform?.toLowerCase().includes("mac")) return "mac";
+  if (window.navigator.platform?.toLowerCase().includes("win")) return "windows";
+  if (ua.toLowerCase().includes("mac")) return "mac";
+  if (ua.toLowerCase().includes("win")) return "windows";
+
+  return "all";
+}
+
+function resolveInitialPlatform(): Platform {
+  const params = new URLSearchParams(window.location.search);
+  const urlPlatform = normalizePlatform(params.get("platform"));
+  if (urlPlatform) return urlPlatform;
+
+  const storedPlatform = normalizePlatform(window.localStorage.getItem(PLATFORM_STORAGE_KEY));
+  if (storedPlatform) return storedPlatform;
+
+  return detectPlatform();
+}
+
+function platformBadge(platforms: readonly Platform[], locale: Locale) {
+  if (platforms.length === 2) return PLATFORM_COMPATIBILITY_TEXT[locale].all;
+  if (platforms.includes("windows")) return PLATFORM_COMPATIBILITY_TEXT[locale].windows;
+  if (platforms.includes("mac")) return PLATFORM_COMPATIBILITY_TEXT[locale].mac;
+  return PLATFORM_COMPATIBILITY_TEXT[locale].all;
+}
+
 function applyLocale(root: HTMLElement, locale: Locale) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   let node = walker.nextNode();
@@ -310,6 +412,7 @@ type Product = {
   categoryId: string;
   description: string;
   price: number;
+  platformSupport: Platform[];
   rating?: string;
   reviews?: number;
   badge: string;
@@ -342,6 +445,7 @@ const products: Product[] = [
     categoryId: "music-audio",
     description: "Riconosci i brani della tua raccolta con impronta acustica e confronto locale.",
     price: 49,
+    platformSupport: ["windows", "mac"],
     badge: "Kreluna originale",
     badgeTone: "green",
     trial: "1 licenza · 1 dispositivo",
@@ -474,6 +578,7 @@ function SearchField({
 
 export default function HomePage() {
   const [locale, setLocale] = useState<Locale>("it");
+  const [platformFilter, setPlatformFilter] = useState<Platform>("all");
   const [activeNav, setActiveNav] = useState("home");
   const [activeCategory, setActiveCategory] = useState("all");
   const [activeFilter, setActiveFilter] = useState<FilterId>("all");
@@ -493,8 +598,19 @@ export default function HomePage() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const toastTimer = useRef<number | null>(null);
 
+  const announce = (message: string) => {
+    setToast(message);
+    if (toastTimer.current) window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(""), 2600);
+  };
+
   useEffect(() => {
-    setLocale(resolveInitialLocale());
+    const localeTimer = window.setTimeout(() => setLocale(resolveInitialLocale()), 0);
+    const platformTimer = window.setTimeout(() => setPlatformFilter(resolveInitialPlatform()), 0);
+    return () => {
+      window.clearTimeout(localeTimer);
+      window.clearTimeout(platformTimer);
+    };
   }, []);
 
   useEffect(() => {
@@ -504,23 +620,30 @@ export default function HomePage() {
 
     const url = new URL(window.location.href);
     url.searchParams.set("lang", locale);
+    url.searchParams.set("platform", platformFilter);
     window.history.replaceState({}, "", url);
     window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-  }, [locale]);
+    window.localStorage.setItem(PLATFORM_STORAGE_KEY, platformFilter);
+  }, [locale, platformFilter]);
 
   useEffect(() => {
     const checkoutState = new URLSearchParams(window.location.search).get("checkout");
+    let announcement = "";
     if (checkoutState === "success") {
-      announce("Pagamento completato. Attivazione confermata, troverai una mail a breve.");
+      announcement = "Pagamento completato. Attivazione confermata, troverai una mail a breve.";
       const url = new URL(window.location.href);
       url.searchParams.delete("checkout");
       window.history.replaceState({}, "", url);
     } else if (checkoutState === "cancel") {
-      announce("Checkout annullato. Ritorna al carrello per riprovare.");
+      announcement = "Checkout annullato. Ritorna al carrello per riprovare.";
       const url = new URL(window.location.href);
       url.searchParams.delete("checkout");
       window.history.replaceState({}, "", url);
     }
+
+    if (!announcement) return;
+    const announcementTimer = window.setTimeout(() => announce(announcement), 0);
+    return () => window.clearTimeout(announcementTimer);
   }, []);
 
   const filteredProducts = useMemo(() => {
@@ -537,20 +660,17 @@ export default function HomePage() {
         activeFilter === "all" ||
         (activeFilter === "popular" && product.popular) ||
         (activeFilter === "new" && product.isNew);
-      return matchesQuery && matchesCategory && matchesFilter;
+      const matchesPlatform =
+        platformFilter === "all" || product.platformSupport.includes(platformFilter);
+
+      return matchesQuery && matchesCategory && matchesFilter && matchesPlatform;
     });
-  }, [activeCategory, activeFilter, locale, query]);
+  }, [activeCategory, activeFilter, locale, platformFilter, query]);
 
   const cartProducts = cart
     .map((id) => products.find((product) => product.id === id))
     .filter((product): product is Product => Boolean(product));
   const cartTotal = cartProducts.reduce((total, product) => total + product.price, 0);
-
-  const announce = (message: string) => {
-    setToast(message);
-    if (toastTimer.current) window.clearTimeout(toastTimer.current);
-    toastTimer.current = window.setTimeout(() => setToast(""), 2600);
-  };
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -803,6 +923,24 @@ export default function HomePage() {
                   </button>
                 ))}
               </div>
+              <div
+                className="platform-switch"
+                role="group"
+                aria-label="Piattaforma del dispositivo"
+              >
+                {(["windows", "mac", "all"] as Platform[]).map((platform) => (
+                  <button
+                    type="button"
+                    key={platform}
+                    className={platformFilter === platform ? "active" : ""}
+                    onClick={() => setPlatformFilter(platform)}
+                    aria-pressed={platformFilter === platform}
+                    aria-label={PLATFORM_OPTIONS[platform].ariaLabel}
+                  >
+                    {PLATFORM_OPTIONS[platform].shortLabel}
+                  </button>
+                ))}
+              </div>
               <button
                 type="button"
                 className="topbar-icon"
@@ -1036,7 +1174,7 @@ export default function HomePage() {
                   required
                 />
 
-                <label>Interessa a:</label>
+                <span className="launch-field-label">Interessa a:</span>
                 <div className="launch-audience">
                   <label>
                     <input
@@ -1175,6 +1313,9 @@ export default function HomePage() {
                         </div>
                       )}
                       <div className="trial-row"><CircleCheck size={14} /> {product.trial}</div>
+                      <div className="platform-row">
+                        <CircleCheck size={14} /> {platformBadge(product.platformSupport, locale)}
+                      </div>
                       <div className="product-footer">
                         <div className="price">
                           <strong>{product.price.toFixed(2).replace(".", ",")} €</strong>
@@ -1221,10 +1362,12 @@ export default function HomePage() {
           <section id="kreluna-plus" className="plus-banner" aria-labelledby="plus-title">
             <div className="plus-pattern" aria-hidden="true" />
             <div className="plus-copy">
+              <span className="plus-status"><span aria-hidden="true" /> PRESTO IN ARRIVO</span>
               <span className="plus-label"><Sparkles size={14} /> IL TUO VANTAGGIO ESCLUSIVO</span>
-              <h2 id="plus-title">Kreluna<span>+</span></h2>
+              <h2 id="plus-title">Kreluna<span>+</span> sta arrivando</h2>
               <h3>Più valore. Più vantaggi. Sempre con te.</h3>
-              <p>Sconti sulle app, crediti mensili e assistenza prioritaria in un unico piano.</p>
+              <p>Due piani pensati per darti più valore su ogni prodotto Kreluna. Stiamo preparando ogni dettaglio prima del lancio.</p>
+              <small className="plus-benefits-label">Vantaggi previsti al lancio</small>
               <div className="plus-benefits">
                 <span><ShieldCheck size={16} /> Sconti fino al 25%</span>
                 <span><Gift size={16} /> Crediti mensili inclusi</span>
@@ -1233,39 +1376,34 @@ export default function HomePage() {
             </div>
             <div className="plans">
               <article className="plan-card plan-card--basic">
-                <span>PIÙ SCELTO</span>
-                <h3>Kreluna+ Basic</h3>
-                <p><strong>9,90 €</strong> /mese</p>
+                <div className="plan-card__topline">
+                  <span>ANTEPRIMA DEL PIANO</span>
+                  <em>PRESTO IN ARRIVO</em>
+                </div>
+                <h3>Kreluna+ Basic <small>Più scelto</small></h3>
+                <p className="plan-price"><small>Prezzo previsto</small><strong>9,90 €</strong> /mese</p>
                 <ul>
                   <li><Check size={14} /> Sconti fino al 15%</li>
                   <li><Check size={14} /> 5 € di crediti inclusi</li>
                   <li><Check size={14} /> Assistenza prioritaria</li>
                 </ul>
-                <button
-                  type="button"
-                  disabled={checkoutLoading}
-                  onClick={() => startCheckout(["kreluna-plus-basic"])}
-                >
-                  Attiva Basic
-                </button>
+                <button type="button" disabled aria-disabled="true">Presto in arrivo</button>
               </article>
               <article className="plan-card plan-card--pro">
-                <span>PER CHI VUOLE DI PIÙ</span>
-                <h3>Kreluna+ Pro</h3>
-                <p><strong>19,90 €</strong> /mese</p>
+                <div className="plan-card__topline">
+                  <span>ANTEPRIMA DEL PIANO</span>
+                  <em>PRESTO IN ARRIVO</em>
+                </div>
+                <h3>Kreluna+ Pro <small>Più vantaggi</small></h3>
+                <p className="plan-price"><small>Prezzo previsto</small><strong>19,90 €</strong> /mese</p>
                 <ul>
                   <li><Check size={14} /> Sconti fino al 25%</li>
                   <li><Check size={14} /> 20 € di crediti inclusi</li>
                   <li><Check size={14} /> Funzioni esclusive</li>
                 </ul>
-                <button
-                  type="button"
-                  disabled={checkoutLoading}
-                  onClick={() => startCheckout(["kreluna-plus-pro"])}
-                >
-                  Attiva Pro
-                </button>
+                <button type="button" disabled aria-disabled="true">Presto in arrivo</button>
               </article>
+              <p className="plans-note"><Clock3 size={14} /> I piani Kreluna+ non sono ancora acquistabili. Prezzi e condizioni saranno confermati prima del lancio.</p>
             </div>
           </section>
 
