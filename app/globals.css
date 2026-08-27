@@ -1664,6 +1664,10 @@ input:focus-visible {
   gap: 14px;
 }
 
+.product-grid--single {
+  grid-template-columns: minmax(260px, 340px);
+}
+
 .product-card {
   position: relative;
   display: flex;

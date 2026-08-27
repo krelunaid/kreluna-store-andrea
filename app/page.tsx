@@ -5,7 +5,6 @@ import {
   BarChart3,
   AudioWaveform,
   Bell,
-  Boxes,
   Building2,
   Check,
   ChevronDown,
@@ -13,16 +12,13 @@ import {
   CircleCheck,
   Clock3,
   CreditCard,
-  FileText,
   Gift,
   Grid2X2,
   Heart,
   Home,
   LifeBuoy,
-  Megaphone,
   Menu,
   PackageCheck,
-  ReceiptText,
   RefreshCcw,
   Rocket,
   Search,
@@ -35,7 +31,6 @@ import {
   Trash2,
   UserRound,
   UsersRound,
-  WandSparkles,
   X,
   Zap,
   type LucideIcon,
@@ -66,7 +61,7 @@ const englishCopy: Record<string, string> = {
   "Il marketplace Kreluna": "The Kreluna marketplace",
   "Trova il software": "Find the software",
   "giusto per te.": "that fits you.",
-  "Oltre 300 app e strumenti selezionati per far crescere la tua attività, tutti in un unico posto.": "Over 300 selected apps and tools to grow your business, all in one place.",
+  "Solo software Kreluna realmente disponibile, verificato e pronto da scoprire.": "Only real Kreluna software that is available, verified and ready to discover.",
   "Scopri le categorie": "Explore categories",
   "I più popolari": "Most popular",
   "Sicuro e verificato": "Safe and verified",
@@ -272,54 +267,6 @@ const categories = [
     tone: "risonix",
     count: 1,
   },
-  {
-    id: "ecommerce",
-    label: "Vendite & e-commerce",
-    shortLabel: "Vendite",
-    icon: ShoppingBag,
-    tone: "mint",
-    count: 48,
-  },
-  {
-    id: "business",
-    label: "Gestione aziendale",
-    shortLabel: "Aziendale",
-    icon: BarChart3,
-    tone: "violet",
-    count: 61,
-  },
-  {
-    id: "accounting",
-    label: "Contabilità & fatture",
-    shortLabel: "Contabilità",
-    icon: ReceiptText,
-    tone: "sky",
-    count: 35,
-  },
-  {
-    id: "marketing",
-    label: "Marketing & social",
-    shortLabel: "Marketing",
-    icon: Megaphone,
-    tone: "orange",
-    count: 54,
-  },
-  {
-    id: "logistics",
-    label: "Magazzino & logistica",
-    shortLabel: "Logistica",
-    icon: Boxes,
-    tone: "amber",
-    count: 29,
-  },
-  {
-    id: "people",
-    label: "Risorse umane",
-    shortLabel: "Risorse umane",
-    icon: UsersRound,
-    tone: "teal",
-    count: 27,
-  },
 ];
 
 const products: Product[] = [
@@ -340,135 +287,6 @@ const products: Product[] = [
     oneTime: true,
     detailUrl: "https://www.kreluna.it/risonix",
   },
-  {
-    id: "invoice-flow",
-    name: "InvoiceFlow",
-    category: "Contabilità & fatture",
-    categoryId: "accounting",
-    description: "Fatturazione semplice, automatica e sempre sotto controllo.",
-    price: 9.9,
-    rating: "4,9",
-    reviews: 184,
-    badge: "Più scelto",
-    badgeTone: "blue",
-    trial: "14 giorni gratis",
-    icon: FileText,
-    iconTone: "sky",
-    popular: true,
-  },
-  {
-    id: "shop-pro",
-    name: "ShopPro",
-    category: "Vendite & e-commerce",
-    categoryId: "ecommerce",
-    description: "Il tuo negozio online completo, pronto per vendere ovunque.",
-    price: 14.9,
-    rating: "4,8",
-    reviews: 219,
-    badge: "Prova gratuita",
-    badgeTone: "orange",
-    trial: "7 giorni gratis",
-    icon: ShoppingCart,
-    iconTone: "orange",
-    popular: true,
-  },
-  {
-    id: "crm-plus",
-    name: "CRM Plus",
-    category: "Gestione aziendale",
-    categoryId: "business",
-    description: "Clienti, vendite e opportunità riuniti in un solo spazio.",
-    price: 19.9,
-    rating: "4,9",
-    reviews: 142,
-    badge: "Consigliato",
-    badgeTone: "purple",
-    trial: "14 giorni gratis",
-    icon: UsersRound,
-    iconTone: "violet",
-    popular: true,
-  },
-  {
-    id: "social-pilot",
-    name: "SocialPilot AI",
-    category: "Marketing & social",
-    categoryId: "marketing",
-    description: "Crea, pianifica e migliora i contenuti con l’intelligenza artificiale.",
-    price: 12.9,
-    rating: "4,7",
-    reviews: 96,
-    badge: "Novità",
-    badgeTone: "green",
-    trial: "7 giorni gratis",
-    icon: WandSparkles,
-    iconTone: "magenta",
-    isNew: true,
-  },
-  {
-    id: "stock-pilot",
-    name: "StockPilot",
-    category: "Magazzino & logistica",
-    categoryId: "logistics",
-    description: "Scorte, ordini e spedizioni aggiornati in tempo reale.",
-    price: 16.9,
-    rating: "4,8",
-    reviews: 117,
-    badge: "-20%",
-    badgeTone: "orange",
-    trial: "14 giorni gratis",
-    icon: Boxes,
-    iconTone: "amber",
-    popular: true,
-  },
-  {
-    id: "team-desk",
-    name: "TeamDesk HR",
-    category: "Risorse umane",
-    categoryId: "people",
-    description: "Presenze, ferie e documenti del team senza complicazioni.",
-    price: 11.9,
-    rating: "4,7",
-    reviews: 88,
-    badge: "Facile da usare",
-    badgeTone: "green",
-    trial: "7 giorni gratis",
-    icon: UsersRound,
-    iconTone: "teal",
-    isNew: true,
-  },
-  {
-    id: "booking-flow",
-    name: "BookingFlow",
-    category: "Vendite & e-commerce",
-    categoryId: "ecommerce",
-    description: "Appuntamenti e prenotazioni online, attivi in pochi minuti.",
-    price: 8.9,
-    rating: "4,8",
-    reviews: 73,
-    badge: "Ideale per PMI",
-    badgeTone: "blue",
-    trial: "14 giorni gratis",
-    icon: CircleCheck,
-    iconTone: "mint",
-    isNew: true,
-  },
-  {
-    id: "kreluna-ai",
-    name: "Kreluna AI Assistant",
-    category: "Gestione aziendale",
-    categoryId: "business",
-    description: "Automatizza le attività ripetitive e ritrova tempo per il tuo business.",
-    price: 9.9,
-    rating: "4,9",
-    reviews: 156,
-    badge: "AI",
-    badgeTone: "purple",
-    trial: "7 giorni gratis",
-    icon: Sparkles,
-    iconTone: "gradient",
-    popular: true,
-    isNew: true,
-  },
 ];
 
 const navItems = [
@@ -484,7 +302,6 @@ const filterOptions = [
   { id: "all", label: "Tutti" },
   { id: "popular", label: "Più popolari" },
   { id: "new", label: "Novità" },
-  { id: "trial", label: "Prova gratuita" },
 ] as const;
 
 const launchBenefits = [
@@ -638,8 +455,7 @@ export default function HomePage() {
       const matchesFilter =
         activeFilter === "all" ||
         (activeFilter === "popular" && product.popular) ||
-        (activeFilter === "new" && product.isNew) ||
-        (activeFilter === "trial" && Boolean(product.trial));
+        (activeFilter === "new" && product.isNew);
       return matchesQuery && matchesCategory && matchesFilter;
     });
   }, [activeCategory, activeFilter, query]);
@@ -929,8 +745,7 @@ export default function HomePage() {
                 <span>giusto per te.</span>
               </h1>
               <p>
-                Oltre 300 app e strumenti selezionati per far crescere la tua attività,
-                tutti in un unico posto.
+                Solo software Kreluna realmente disponibile, verificato e pronto da scoprire.
               </p>
               <div className="hero-actions">
                 <button type="button" className="button button--primary" onClick={() => scrollTo("categorie")}>
@@ -1204,7 +1019,7 @@ export default function HomePage() {
             </div>
 
             {filteredProducts.length ? (
-              <div className="product-grid">
+              <div className={`product-grid ${filteredProducts.length === 1 ? "product-grid--single" : ""}`}>
                 {filteredProducts.map((product) => {
                   const Icon = product.icon;
                   const isFavorite = favorites.has(product.id);

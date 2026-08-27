@@ -36,11 +36,11 @@ test("renders the Kreluna Store experience", async () => {
   assert.match(html, /Categorie principali/);
   assert.match(html, /Per te/);
   assert.match(html, /Per la tua azienda/);
-  assert.match(html, /InvoiceFlow/);
   assert.match(html, /Risonix/);
   assert.match(html, /Musica &amp; audio/);
   assert.match(html, /49,00/);
   assert.match(html, /Kreluna\+/);
+  assert.doesNotMatch(html, /InvoiceFlow|ShopPro|CRM Plus|SocialPilot AI|StockPilot|TeamDesk HR|BookingFlow|Kreluna AI Assistant/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|Building your site/i);
 });
 
