@@ -38,7 +38,24 @@ import {
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { checkoutCatalogMap } from "./lib/checkout-catalog";
 
-type Locale = "it" | "en";
+type Locale = "it" | "en" | "fr" | "de" | "es";
+
+const LOCALE_STORAGE_KEY = "kreluna-locale";
+const SUPPORTED_LOCALES: Locale[] = ["it", "en", "fr", "de", "es"];
+
+const LOCALE_OPTIONS: Record<
+  Locale,
+  {
+    label: string;
+    ariaLabel: string;
+  }
+> = {
+  it: { label: "IT", ariaLabel: "Italiano" },
+  en: { label: "EN", ariaLabel: "English" },
+  fr: { label: "FR", ariaLabel: "Français" },
+  de: { label: "DE", ariaLabel: "Deutsch" },
+  es: { label: "ES", ariaLabel: "Español" },
+};
 
 const englishCopy: Record<string, string> = {
   "Vai al contenuto": "Skip to content",
@@ -198,12 +215,23 @@ const italianCopy = Object.fromEntries(
   Object.entries(englishCopy).map(([italian, english]) => [english, italian]),
 );
 
+const fallbackLocaleCopies: Record<Locale, Record<string, string>> = {
+  it: italianCopy,
+  en: englishCopy,
+  // Temporary: per queste lingue impostiamo ora la stessa base inglese.
+  // In fase successiva andrà inserita la traduzione completa FR/DE/ES.
+  fr: englishCopy,
+  de: englishCopy,
+  es: englishCopy,
+};
+
 function translatedText(value: string, locale: Locale) {
-  const dictionary = locale === "en" ? englishCopy : italianCopy;
+  const dictionary = fallbackLocaleCopies[locale] ?? italianCopy;
   const leading = value.match(/^\s*/)?.[0] ?? "";
   const trailing = value.match(/\s*$/)?.[0] ?? "";
   const core = value.trim();
-  let translated = dictionary[core] ?? core;
+  const fallback = fallbackLocaleCopies.en[core];
+  let translated = dictionary[core] ?? fallback ?? core;
 
   if (locale === "en") {
     translated = translated
@@ -220,6 +248,41 @@ function translatedText(value: string, locale: Locale) {
   }
 
   return `${leading}${translated}${trailing}`;
+}
+
+function normalizeLocale(value: string | null | undefined): Locale | null {
+  if (!value) return null;
+  const normalized = value.toLowerCase();
+  if (SUPPORTED_LOCALES.includes(normalized as Locale)) return normalized as Locale;
+
+  const short = normalized.split("-")[0];
+  if (SUPPORTED_LOCALES.includes(short as Locale)) return short as Locale;
+
+  return null;
+}
+
+function detectBrowserLocale(): Locale {
+  const navigatorLocales = window.navigator.languages?.length
+    ? window.navigator.languages
+    : [window.navigator.language];
+
+  for (const candidate of navigatorLocales) {
+    const locale = normalizeLocale(candidate);
+    if (locale) return locale;
+  }
+
+  return "it";
+}
+
+function resolveInitialLocale(): Locale {
+  const params = new URLSearchParams(window.location.search);
+  const urlLocale = normalizeLocale(params.get("lang"));
+  if (urlLocale) return urlLocale;
+
+  const storedLocale = normalizeLocale(window.localStorage.getItem(LOCALE_STORAGE_KEY));
+  if (storedLocale) return storedLocale;
+
+  return detectBrowserLocale();
 }
 
 function applyLocale(root: HTMLElement, locale: Locale) {
@@ -335,11 +398,13 @@ function SearchField({
   query,
   onQueryChange,
   onSelect,
+  locale,
   mobile = false,
 }: {
   query: string;
   onQueryChange: (value: string) => void;
   onSelect: (product: Product) => void;
+  locale: Locale;
   mobile?: boolean;
 }) {
   const [focused, setFocused] = useState(false);
@@ -347,8 +412,8 @@ function SearchField({
     ? products
         .filter((product) =>
           `${product.name} ${product.category}`
-            .toLocaleLowerCase("it")
-            .includes(query.trim().toLocaleLowerCase("it")),
+            .toLocaleLowerCase(locale)
+            .includes(query.trim().toLocaleLowerCase(locale)),
         )
         .slice(0, 4)
     : [];
@@ -429,9 +494,7 @@ export default function HomePage() {
   const toastTimer = useRef<number | null>(null);
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("lang") === "en") {
-      setLocale("en");
-    }
+    setLocale(resolveInitialLocale());
   }, []);
 
   useEffect(() => {
@@ -440,10 +503,10 @@ export default function HomePage() {
     if (root) applyLocale(root, locale);
 
     const url = new URL(window.location.href);
-    if (locale === "en") url.searchParams.set("lang", "en");
-    else url.searchParams.delete("lang");
+    url.searchParams.set("lang", locale);
     window.history.replaceState({}, "", url);
-  });
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  }, [locale]);
 
   useEffect(() => {
     const checkoutState = new URLSearchParams(window.location.search).get("checkout");
@@ -461,12 +524,12 @@ export default function HomePage() {
   }, []);
 
   const filteredProducts = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase("it");
+    const normalizedQuery = query.trim().toLocaleLowerCase(locale);
     return products.filter((product) => {
       const matchesQuery =
         !normalizedQuery ||
         `${product.name} ${product.category} ${product.description}`
-          .toLocaleLowerCase("it")
+          .toLocaleLowerCase(locale)
           .includes(normalizedQuery);
       const matchesCategory =
         activeCategory === "all" || product.categoryId === activeCategory;
@@ -476,7 +539,7 @@ export default function HomePage() {
         (activeFilter === "new" && product.isNew);
       return matchesQuery && matchesCategory && matchesFilter;
     });
-  }, [activeCategory, activeFilter, query]);
+  }, [activeCategory, activeFilter, locale, query]);
 
   const cartProducts = cart
     .map((id) => products.find((product) => product.id === id))
@@ -723,27 +786,22 @@ export default function HomePage() {
               query={query}
               onQueryChange={setQuery}
               onSelect={chooseSearchResult}
+              locale={locale}
             />
             <div className="topbar-actions">
               <div className="language-switch" role="group" aria-label="Lingua del sito">
-                <button
-                  type="button"
-                  className={locale === "it" ? "active" : ""}
-                  onClick={() => setLocale("it")}
-                  aria-pressed={locale === "it"}
-                  aria-label="Italiano"
-                >
-                  IT
-                </button>
-                <button
-                  type="button"
-                  className={locale === "en" ? "active" : ""}
-                  onClick={() => setLocale("en")}
-                  aria-pressed={locale === "en"}
-                  aria-label="English"
-                >
-                  EN
-                </button>
+                {SUPPORTED_LOCALES.map((lang) => (
+                  <button
+                    type="button"
+                    key={lang}
+                    className={locale === lang ? "active" : ""}
+                    onClick={() => setLocale(lang)}
+                    aria-pressed={locale === lang}
+                    aria-label={LOCALE_OPTIONS[lang].ariaLabel}
+                  >
+                    {LOCALE_OPTIONS[lang].label}
+                  </button>
+                ))}
               </div>
               <button
                 type="button"
@@ -787,6 +845,7 @@ export default function HomePage() {
               query={query}
               onQueryChange={setQuery}
               onSelect={chooseSearchResult}
+              locale={locale}
               mobile
             />
           </div>
