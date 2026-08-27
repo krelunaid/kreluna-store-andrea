@@ -374,6 +374,7 @@ export default function HomePage() {
   const [launchName, setLaunchName] = useState("");
   const [launchEmail, setLaunchEmail] = useState("");
   const [launchMessage, setLaunchMessage] = useState("");
+  const [launchAudience, setLaunchAudience] = useState<"te" | "azienda">("te");
   const [launchSuccess, setLaunchSuccess] = useState("");
   const toastTimer = useRef<number | null>(null);
 
@@ -475,7 +476,11 @@ export default function HomePage() {
       announce("Inserisci un indirizzo email valido");
       return;
     }
-    setLaunchSuccess("Grazie! Ti avviseremo non appena apriamo le iscrizioni.");
+    const audienceLabel =
+      launchAudience === "te"
+        ? "per te"
+        : "per la tua azienda";
+    setLaunchSuccess(`Grazie! Ti avviseremo ${audienceLabel} non appena apriamo le iscrizioni.`);
     announce("Richiesta inviata con successo.");
     setLaunchName("");
     setLaunchEmail("");
@@ -831,6 +836,28 @@ export default function HomePage() {
                   placeholder="Scrivici il tuo settore e riceverai un aggiornamento prioritario."
                   required
                 />
+
+                <label>Interessa a:</label>
+                <div className="launch-audience">
+                  <label>
+                    <input
+                      type="radio"
+                      name="launch-audience"
+                      checked={launchAudience === "te"}
+                      onChange={() => setLaunchAudience("te")}
+                    />
+                    Per te
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="launch-audience"
+                      checked={launchAudience === "azienda"}
+                      onChange={() => setLaunchAudience("azienda")}
+                    />
+                    Per la tua azienda
+                  </label>
+                </div>
 
                 <button type="submit" className="button button--primary">
                   Ti facciamo sapere quando parte

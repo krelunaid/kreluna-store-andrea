@@ -1355,6 +1355,25 @@ input:focus-visible {
   resize: vertical;
 }
 
+.launch-audience {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.launch-audience label {
+  color: #2c3e5a;
+  font-size: 9.8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #d9e1ed;
+  border-radius: 10px;
+  padding: 9px 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .launch-form .button--primary {
   margin-top: 2px;
 }
