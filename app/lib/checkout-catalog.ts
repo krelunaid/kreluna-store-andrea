@@ -6,6 +6,7 @@ export type CheckoutCatalogItem = {
   taxCode: string;
   description?: string;
   cadence?: "one-time" | "monthly";
+  canonicalCheckoutUrl?: string;
 };
 
 export const checkoutCatalog: CheckoutCatalogItem[] = [
@@ -15,8 +16,9 @@ export const checkoutCatalog: CheckoutCatalogItem[] = [
     priceCents: 4900,
     currency: "eur",
     taxCode: "txcd_10202000",
-    description: "Riconosci i brani della tua raccolta con impronta acustica e confronto locale.",
+    description: "Riconosci i brani della tua raccolta con impronta acustica su Windows 10/11 e Mac Apple Silicon.",
     cadence: "one-time",
+    canonicalCheckoutUrl: "https://www.kreluna.it/risonix/acquista",
   },
   {
     id: "kreluna-plus-basic",

@@ -88,6 +88,22 @@ export async function POST(request: Request) {
     );
   }
 
+  const canonicalItems = validItems.filter(
+    (item) => checkoutCatalogMap[item.id].canonicalCheckoutUrl,
+  );
+  if (canonicalItems.length > 0) {
+    if (validItems.length !== 1 || canonicalItems.length !== 1) {
+      return Response.json(
+        { error: "Risonix deve essere acquistata separatamente per garantire licenza e download." },
+        { status: 409 },
+      );
+    }
+    return Response.json({
+      checkoutUrl: checkoutCatalogMap[canonicalItems[0].id].canonicalCheckoutUrl,
+      delegated: true,
+    });
+  }
+
   const runtimeEnv = (env as CheckoutEnv) ?? {};
   const requestedDemo = toBoolean(body.demo) || query.get("demo") === "1";
   const demoByDefault =
