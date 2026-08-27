@@ -42,6 +42,7 @@ type Locale = "it" | "en" | "fr" | "de" | "es";
 
 const LOCALE_STORAGE_KEY = "kreluna-locale";
 const SUPPORTED_LOCALES: Locale[] = ["it", "en", "fr", "de", "es"];
+const CANONICAL_HOST = "store.kreluna.it";
 
 const LOCALE_OPTIONS: Record<
   Locale,
@@ -598,6 +599,22 @@ export default function HomePage() {
   const [launchSuccess, setLaunchSuccess] = useState("");
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const toastTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    const host = window.location.hostname.toLowerCase();
+    if (
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host === "store.kreluna.it" ||
+      host.startsWith("localhost:")
+    ) {
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    url.hostname = CANONICAL_HOST;
+    window.location.replace(url.toString());
+  }, []);
 
   const announce = (message: string) => {
     setToast(message);
