@@ -1,7 +1,5 @@
 import { env } from "cloudflare:workers";
-import { chatGPTSignInPath, getChatGPTUser } from "../../chatgpt-auth";
 import { checkoutCatalogMap } from "../../lib/checkout-catalog";
-import { ensureCustomer } from "../../lib/server/store";
 
 type CheckoutItemInput = {
   id: string;
@@ -63,16 +61,6 @@ function getRedirectUrl(request: Request, path: string) {
 }
 
 export async function POST(request: Request) {
-  const user = await getChatGPTUser();
-  if (!user) {
-    return Response.json(
-      {
-        error: "Accedi al tuo account Kreluna prima del pagamento.",
-        signInUrl: chatGPTSignInPath("/?checkout=resume"),
-      },
-      { status: 401 },
-    );
-  }
   const body = (await request.json().catch(() => ({}))) as CheckoutInput;
   const items = Array.isArray(body.items) ? body.items : [];
   const requestUrl = new URL(request.url);
@@ -128,19 +116,9 @@ export async function POST(request: Request) {
   }
 
   const form = new URLSearchParams();
-  const customer = await ensureCustomer(user);
   form.append("mode", "payment");
-  form.append(
-    "success_url",
-    getRedirectUrl(request, "/?checkout=success&session_id={CHECKOUT_SESSION_ID}&account=1"),
-  );
+  form.append("success_url", getRedirectUrl(request, "/?checkout=success"));
   form.append("cancel_url", getRedirectUrl(request, "/?checkout=cancel"));
-  form.append("customer", customer.stripe_customer_id ?? "");
-  form.append("client_reference_id", user.userId);
-  form.append("metadata[kreluna_user_id]", user.userId);
-  form.append("metadata[product_ids]", validItems.map((item) => item.id).join(","));
-  form.append("payment_intent_data[metadata][kreluna_user_id]", user.userId);
-  form.append("payment_intent_data[metadata][product_ids]", validItems.map((item) => item.id).join(","));
   encodeLineItems(form, validItems);
 
   const checkoutRequest = await fetch("https://api.stripe.com/v1/checkout/sessions", {
