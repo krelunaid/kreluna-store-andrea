@@ -3339,7 +3339,8 @@ input:focus-visible {
     width: 100%;
   }
 
-  .launch-form label {
+  .launch-form label,
+  .launch-form-label {
     color: #b2cae9;
   }
 
