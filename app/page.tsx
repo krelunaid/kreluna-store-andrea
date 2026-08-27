@@ -40,7 +40,208 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { FormEvent, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+
+type Locale = "it" | "en";
+
+const englishCopy: Record<string, string> = {
+  "Vai al contenuto": "Skip to content",
+  "ESPLORA": "EXPLORE",
+  "SUPPORTO": "SUPPORT",
+  "Home": "Home",
+  "Categorie": "Categories",
+  "Consigliati per te": "Recommended for you",
+  "I miei prodotti": "My products",
+  "Preferiti": "Favorites",
+  "Cronologia": "History",
+  "Assistenza": "Support",
+  "Scopri Kreluna+": "Discover Kreluna+",
+  "Più vantaggi su ogni app.": "More benefits on every app.",
+  "Esplora": "Explore",
+  "Account personale": "Personal account",
+  "Carrello": "Cart",
+  "Lingua del sito": "Site language",
+  "Cerca app, strumenti, soluzioni...": "Search apps, tools and solutions...",
+  "Cerca nel Kreluna Store": "Search the Kreluna Store",
+  "Il marketplace Kreluna": "The Kreluna marketplace",
+  "Trova il software": "Find the software",
+  "giusto per te.": "that fits you.",
+  "Oltre 300 app e strumenti selezionati per far crescere la tua attività, tutti in un unico posto.": "Over 300 selected apps and tools to grow your business, all in one place.",
+  "Scopri le categorie": "Explore categories",
+  "I più popolari": "Most popular",
+  "Sicuro e verificato": "Safe and verified",
+  "Prezzi trasparenti": "Transparent pricing",
+  "Verificato": "Verified",
+  "SCEGLI IL TUO PERCORSO": "CHOOSE YOUR PATH",
+  "Come userai Kreluna Store?": "How will you use Kreluna Store?",
+  "Seleziona il profilo per vedere le soluzioni più adatte alle tue esigenze.": "Choose a profile to see the solutions that best fit your needs.",
+  "PROFESSIONISTI E CREATOR": "PROFESSIONALS AND CREATORS",
+  "Per te": "For you",
+  "App immediate per organizzarti, creare e far crescere il tuo lavoro.": "Ready-to-use apps to organize, create and grow your work.",
+  "Facili da usare": "Easy to use",
+  "Attivazione rapida": "Quick activation",
+  "TEAM, PMI E IMPRESE": "TEAMS, SMEs AND COMPANIES",
+  "Per la tua azienda": "For your business",
+  "Soluzioni complete per coordinare persone, vendite e operazioni.": "Complete solutions to coordinate people, sales and operations.",
+  "Per tutto il team": "For the whole team",
+  "Controllo centralizzato": "Centralized control",
+  "Novità per aziende": "New for businesses",
+  "Nuovo servizio in arrivo": "A new service is coming",
+  "Stiamo per lanciare il nostro servizio premium per aziende.": "We are about to launch our premium service for businesses.",
+  "Scopri come funziona": "See how it works",
+  "Prossimamente": "Coming soon",
+  "Versione Business di Kreluna Store": "Kreluna Store Business edition",
+  "Stiamo preparando una piattaforma completa per team e brand, con gestione prodotti, ordini e supporto dedicato, pensata per chi lavora in gruppo.": "We are building a complete platform for teams and brands, with product and order management plus dedicated support.",
+  "Gestione centralizzata ruoli, permessi e team": "Centralized roles, permissions and team management",
+  "Avvio rapido in pochi giorni, niente sviluppo complesso": "Launch in days, with no complex development",
+  "Aggiornamenti continui e rollout semplificato": "Continuous updates and simplified rollout",
+  "Entro 30 ottobre 2026": "By October 30, 2026",
+  "Contattaci": "Contact us",
+  "Nome": "Name",
+  "Il tuo nome": "Your name",
+  "Ti interessa anche questo messaggio?": "Tell us what interests you",
+  "Scrivici il tuo settore e riceverai un aggiornamento prioritario.": "Tell us about your industry to receive priority updates.",
+  "Interessa a:": "This is for:",
+  "Ti facciamo sapere quando parte": "Notify me when it launches",
+  "Categorie principali": "Main categories",
+  "Tutto quello che serve al tuo business, ordinato per esigenza.": "Everything your business needs, organized by purpose.",
+  "Vedi tutte": "View all",
+  "Musica & audio": "Music & audio",
+  "Vendite & e-commerce": "Sales & e-commerce",
+  "Gestione aziendale": "Business management",
+  "Contabilità & fatture": "Accounting & invoicing",
+  "Marketing & social": "Marketing & social",
+  "Magazzino & logistica": "Inventory & logistics",
+  "Risorse umane": "Human resources",
+  "SCELTI PER TE": "SELECTED FOR YOU",
+  "PER IL TUO BUSINESS": "FOR YOUR BUSINESS",
+  "App scelte per te": "Apps selected for you",
+  "Soluzioni per la tua azienda": "Solutions for your business",
+  "Strumenti verificati, semplici da attivare e senza sorprese.": "Verified tools, easy to activate and with no surprises.",
+  "Software affidabili per far lavorare meglio il tuo team e la tua impresa.": "Reliable software to help your team and business work better.",
+  "Più rilevanti": "Most relevant",
+  "Tutti": "All",
+  "Più popolari": "Most popular",
+  "Novità": "New",
+  "Prova gratuita": "Free trial",
+  "Riconosci i brani della tua raccolta con impronta acustica e confronto locale.": "Identify songs in your collection using acoustic fingerprints and local matching.",
+  "Kreluna originale": "Kreluna original",
+  "Più scelto": "Most popular",
+  "Consigliato": "Recommended",
+  "Facile da usare": "Easy to use",
+  "Ideale per PMI": "Ideal for SMEs",
+  "1 licenza · 1 dispositivo": "1 license · 1 device",
+  "Nuovo nel Kreluna Store": "New in the Kreluna Store",
+  "una tantum": "one-time",
+  "Scopri": "Discover",
+  "Fatturazione semplice, automatica e sempre sotto controllo.": "Simple, automated invoicing that is always under control.",
+  "Il tuo negozio online completo, pronto per vendere ovunque.": "Your complete online store, ready to sell anywhere.",
+  "Clienti, vendite e opportunità riuniti in un solo spazio.": "Customers, sales and opportunities in one place.",
+  "Crea, pianifica e migliora i contenuti con l’intelligenza artificiale.": "Create, schedule and improve content with artificial intelligence.",
+  "Scorte, ordini e spedizioni aggiornati in tempo reale.": "Inventory, orders and shipments updated in real time.",
+  "Presenze, ferie e documenti del team senza complicazioni.": "Attendance, leave and team documents without complications.",
+  "Appuntamenti e prenotazioni online, attivi in pochi minuti.": "Online appointments and bookings, live in minutes.",
+  "Automatizza le attività ripetitive e ritrova tempo per il tuo business.": "Automate repetitive tasks and reclaim time for your business.",
+  "Nessuna app trovata": "No apps found",
+  "Prova a cambiare ricerca o a rimuovere i filtri selezionati.": "Try changing your search or removing the selected filters.",
+  "Azzera i filtri": "Clear filters",
+  "IL TUO VANTAGGIO ESCLUSIVO": "YOUR EXCLUSIVE BENEFIT",
+  "Più valore. Più vantaggi. Sempre con te.": "More value. More benefits. Always with you.",
+  "Sconti sulle app, crediti mensili e assistenza prioritaria in un unico piano.": "App discounts, monthly credits and priority support in one plan.",
+  "Sconti fino al 25%": "Discounts up to 25%",
+  "Crediti mensili inclusi": "Monthly credits included",
+  "Accesso anticipato": "Early access",
+  "PIÙ SCELTO": "MOST POPULAR",
+  "PER CHI VUOLE DI PIÙ": "FOR THOSE WHO WANT MORE",
+  "Assistenza prioritaria": "Priority support",
+  "Funzioni esclusive": "Exclusive features",
+  "Attiva Basic": "Activate Basic",
+  "Attiva Pro": "Activate Pro",
+  "PERCHÉ KRELUNA STORE": "WHY KRELUNA STORE",
+  "Semplice dall’inizio alla crescita": "Simple from day one to growth",
+  "Sicuro": "Secure",
+  "Ogni app è verificata prima della pubblicazione.": "Every app is verified before publication.",
+  "Trasparente": "Transparent",
+  "Prezzi chiari, rinnovi sotto controllo.": "Clear pricing and renewals under control.",
+  "Testa gli strumenti prima di scegliere.": "Try tools before choosing.",
+  "Flessibile": "Flexible",
+  "Nessun vincolo, cambia quando vuoi.": "No lock-in. Change whenever you want.",
+  "Trova l’app giusta": "Find the right app",
+  "Attiva": "Activate",
+  "In pochi clic": "In a few clicks",
+  "Usa": "Use",
+  "Tutto insieme": "Everything together",
+  "Cresci": "Grow",
+  "Fai evolvere il business": "Move your business forward",
+  "Il marketplace dei software che fanno avanzare il tuo business.": "The software marketplace that moves your business forward.",
+  "Tutti i diritti riservati.": "All rights reserved.",
+  "IL TUO CARRELLO": "YOUR CART",
+  "Pronto da attivare": "Ready to activate",
+  "Il carrello è vuoto": "Your cart is empty",
+  "Esplora le app e aggiungi quelle più utili al tuo business.": "Explore apps and add the most useful ones for your business.",
+  "Scopri le app": "Explore apps",
+  "Totale del carrello": "Cart total",
+  "Prezzi e condizioni sono mostrati prima del pagamento.": "Prices and terms are shown before payment.",
+  "Procedi all’attivazione": "Proceed to activation",
+  "Chiudi carrello": "Close cart",
+  "Chiudi dettagli": "Close details",
+  "Novità Kreluna": "New from Kreluna",
+  "Configurazione guidata inclusa": "Guided setup included",
+  "Aggiornamenti automatici": "Automatic updates",
+  "Assistenza Kreluna verificata": "Verified Kreluna support",
+  "Prezzo completo": "Full price",
+  "A partire da": "Starting from",
+  "Nei preferiti": "In favorites",
+  "Salva": "Save",
+  "Scopri Risonix": "Discover Risonix",
+  "Prova gratis": "Try for free",
+};
+
+const italianCopy = Object.fromEntries(
+  Object.entries(englishCopy).map(([italian, english]) => [english, italian]),
+);
+
+function translatedText(value: string, locale: Locale) {
+  const dictionary = locale === "en" ? englishCopy : italianCopy;
+  const leading = value.match(/^\s*/)?.[0] ?? "";
+  const trailing = value.match(/\s*$/)?.[0] ?? "";
+  const core = value.trim();
+  let translated = dictionary[core] ?? core;
+
+  if (locale === "en") {
+    translated = translated
+      .replace(/^(\d+) soluzioni$/, "$1 solutions")
+      .replace(/^(\d+) recensioni$/, "$1 reviews")
+      .replace(/^Sconti fino al (\d+)%$/, "Discounts up to $1%")
+      .replace(/^(\d+) € di crediti inclusi$/, "$1 € in credits included");
+  } else {
+    translated = translated
+      .replace(/^(\d+) solutions$/, "$1 soluzioni")
+      .replace(/^(\d+) reviews$/, "$1 recensioni")
+      .replace(/^Discounts up to (\d+)%$/, "Sconti fino al $1%")
+      .replace(/^(\d+) € in credits included$/, "$1 € di crediti inclusi");
+  }
+
+  return `${leading}${translated}${trailing}`;
+}
+
+function applyLocale(root: HTMLElement, locale: Locale) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let node = walker.nextNode();
+  while (node) {
+    if (node.parentElement && !["SCRIPT", "STYLE"].includes(node.parentElement.tagName)) {
+      node.nodeValue = translatedText(node.nodeValue ?? "", locale);
+    }
+    node = walker.nextNode();
+  }
+
+  root.querySelectorAll<HTMLElement>("[aria-label], [placeholder], [title]").forEach((element) => {
+    ["aria-label", "placeholder", "title"].forEach((attribute) => {
+      const value = element.getAttribute(attribute);
+      if (value) element.setAttribute(attribute, translatedText(value, locale));
+    });
+  });
+}
 
 type Product = {
   id: string;
@@ -388,6 +589,7 @@ function SearchField({
 }
 
 export default function HomePage() {
+  const [locale, setLocale] = useState<Locale>("it");
   const [activeNav, setActiveNav] = useState("home");
   const [activeCategory, setActiveCategory] = useState("all");
   const [activeFilter, setActiveFilter] = useState<FilterId>("all");
@@ -405,6 +607,23 @@ export default function HomePage() {
   const [launchAudience, setLaunchAudience] = useState<"te" | "azienda">("te");
   const [launchSuccess, setLaunchSuccess] = useState("");
   const toastTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("lang") === "en") {
+      setLocale("en");
+    }
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    const root = document.querySelector<HTMLElement>(".store-shell");
+    if (root) applyLocale(root, locale);
+
+    const url = new URL(window.location.href);
+    if (locale === "en") url.searchParams.set("lang", "en");
+    else url.searchParams.delete("lang");
+    window.history.replaceState({}, "", url);
+  });
 
   const filteredProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("it");
@@ -632,6 +851,26 @@ export default function HomePage() {
               onSelect={chooseSearchResult}
             />
             <div className="topbar-actions">
+              <div className="language-switch" role="group" aria-label="Lingua del sito">
+                <button
+                  type="button"
+                  className={locale === "it" ? "active" : ""}
+                  onClick={() => setLocale("it")}
+                  aria-pressed={locale === "it"}
+                  aria-label="Italiano"
+                >
+                  IT
+                </button>
+                <button
+                  type="button"
+                  className={locale === "en" ? "active" : ""}
+                  onClick={() => setLocale("en")}
+                  aria-pressed={locale === "en"}
+                  aria-label="English"
+                >
+                  EN
+                </button>
+              </div>
               <button
                 type="button"
                 className="topbar-icon"

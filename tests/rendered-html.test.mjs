@@ -52,6 +52,8 @@ test("keeps starter preview infrastructure removed", async () => {
   ]);
 
   assert.match(page, /Kreluna Store/);
+  assert.match(page, /Find the software/);
+  assert.match(page, /language-switch/);
   assert.match(layout, /Kreluna Store — Tutto il software/);
   assert.match(layout, /<html lang="it">/);
   assert.match(packageJson, /"name": "kreluna-store"/);
