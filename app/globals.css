@@ -3558,7 +3558,17 @@ input:focus-visible {
   }
 
   .product-actions {
+    display: flex;
+  }
+
+  .product-actions .details-button {
     display: none;
+  }
+
+  .product-footer {
+    display: grid;
+    justify-items: end;
+    gap: 7px;
   }
 
   .empty-state {
