@@ -40,6 +40,23 @@ import { checkoutCatalogMap } from "./lib/checkout-catalog";
 
 type Locale = "it" | "en" | "fr" | "de" | "es";
 
+type AccountState = {
+  authenticated: boolean;
+  signInUrl?: string;
+  signOutUrl?: string;
+  user?: { displayName: string; email: string; initials: string };
+};
+
+type OwnedProduct = {
+  id: string;
+  name: string;
+  purchasedAt: string;
+  amount: number;
+  currency: string;
+  licenseKey: string | null;
+  downloads: Record<"macos" | "windows", { available: boolean; url: string | null; label: string }>;
+};
+
 const LOCALE_STORAGE_KEY = "kreluna-locale";
 const SUPPORTED_LOCALES: Locale[] = ["it", "en", "fr", "de", "es"];
 const CANONICAL_HOST = "store.kreluna.it";
@@ -598,6 +615,10 @@ export default function HomePage() {
   const [launchAudience, setLaunchAudience] = useState<"te" | "azienda">("te");
   const [launchSuccess, setLaunchSuccess] = useState("");
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [account, setAccount] = useState<AccountState | null>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [ownedProducts, setOwnedProducts] = useState<OwnedProduct[]>([]);
   const toastTimer = useRef<number | null>(null);
 
   useEffect(() => {
@@ -645,16 +666,81 @@ export default function HomePage() {
   }, [locale, platformFilter]);
 
   useEffect(() => {
+    fetch("/api/account", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((payload: AccountState) => setAccount(payload))
+      .catch(() => setAccount({ authenticated: false, signInUrl: "/signin-with-chatgpt?return_to=%2F" }));
+  }, []);
+
+  const loadOwnedProducts = async () => {
+    if (productsLoading) return;
+    setProductsLoading(true);
+    try {
+      const response = await fetch("/api/account/products", { cache: "no-store" });
+      const payload = (await response.json().catch(() => ({}))) as {
+        products?: OwnedProduct[];
+        signInUrl?: string;
+        error?: string;
+      };
+      if (response.status === 401 && payload.signInUrl) {
+        window.location.assign(payload.signInUrl);
+        return;
+      }
+      if (!response.ok) {
+        announce(payload.error ?? "Impossibile caricare i tuoi prodotti.");
+        return;
+      }
+      setOwnedProducts(payload.products ?? []);
+    } catch {
+      announce("Impossibile collegarsi all’area prodotti.");
+    } finally {
+      setProductsLoading(false);
+    }
+  };
+
+  const openAccount = () => {
+    if (account && !account.authenticated) {
+      window.location.assign(account.signInUrl ?? "/signin-with-chatgpt?return_to=%2F%3Faccount%3D1");
+      return;
+    }
+    setAccountOpen(true);
+    void loadOwnedProducts();
+  };
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const checkoutState = params.get("checkout");
+    const sessionId = params.get("session_id");
     const isDemoCheckout = params.get("demo") === "1";
     let announcement = "";
     if (checkoutState === "success") {
       announcement = isDemoCheckout
         ? "Attivazione completata in modalità demo: l'integrazione con Stripe non è attiva."
-        : "Pagamento completato. Attivazione confermata, troverai una mail a breve.";
+        : "Pagamento completato. Sto preparando licenza e download.";
+      if (!isDemoCheckout && sessionId) {
+        void fetch("/api/orders/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId }),
+        })
+          .then(async (response) => {
+            const payload = (await response.json().catch(() => ({}))) as { error?: string; signInUrl?: string };
+            if (response.status === 401 && payload.signInUrl) {
+              window.location.assign(payload.signInUrl);
+              return;
+            }
+            if (!response.ok) throw new Error(payload.error ?? "Conferma acquisto non riuscita.");
+            setCart([]);
+            setAccountOpen(true);
+            await loadOwnedProducts();
+            announce("Risonix è pronto nella sezione I miei prodotti.");
+          })
+          .catch((error) => announce(error instanceof Error ? error.message : "Conferma acquisto non riuscita."));
+      }
       const url = new URL(window.location.href);
       url.searchParams.delete("checkout");
+      url.searchParams.delete("session_id");
+      url.searchParams.delete("account");
       url.searchParams.delete("demo");
       url.searchParams.delete("tx");
       window.history.replaceState({}, "", url);
@@ -670,6 +756,7 @@ export default function HomePage() {
     if (!announcement) return;
     const announcementTimer = window.setTimeout(() => announce(announcement), 0);
     return () => window.clearTimeout(announcementTimer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- consume Stripe return parameters only once
   }, []);
 
   const filteredProducts = useMemo(() => {
@@ -774,8 +861,14 @@ export default function HomePage() {
       });
       const payload = (await response.json().catch(() => ({}))) as {
         checkoutUrl?: string;
+        signInUrl?: string;
         error?: string;
       };
+
+      if (response.status === 401 && payload.signInUrl) {
+        window.location.assign(payload.signInUrl);
+        return;
+      }
 
       if (!response.ok || !payload.checkoutUrl) {
         announce(payload.error ?? "Errore durante la creazione del checkout.");
@@ -822,7 +915,8 @@ export default function HomePage() {
     setMenuOpen(false);
     if (id === "home") window.scrollTo({ top: 0, behavior: "smooth" });
     else if (id === "categorie") scrollTo("categorie");
-    else if (id === "consigliati" || id === "prodotti") scrollTo("prodotti");
+    else if (id === "consigliati") scrollTo("prodotti");
+    else if (id === "prodotti") openAccount();
     else if (id === "preferiti") {
       setQuery("");
       setActiveCategory("all");
@@ -904,11 +998,11 @@ export default function HomePage() {
           </button>
         </div>
 
-        <button className="sidebar-profile" type="button" onClick={() => announce("Profilo demo Kreluna") }>
-          <span className="avatar">AG</span>
+        <button className="sidebar-profile" type="button" onClick={openAccount}>
+          <span className="avatar">{account?.user?.initials ?? "KR"}</span>
           <span>
-            <strong>Andrea</strong>
-            <small>Account personale</small>
+            <strong>{account?.user?.displayName ?? "Account Kreluna"}</strong>
+            <small>{account?.authenticated ? "I miei prodotti" : "Accedi"}</small>
           </span>
           <ChevronRight size={16} />
         </button>
@@ -995,8 +1089,8 @@ export default function HomePage() {
                 <span>Carrello</span>
                 {cart.length > 0 && <small>{cart.length}</small>}
               </button>
-              <button type="button" className="profile-compact" onClick={() => announce("Profilo demo Kreluna") }>
-                <span className="avatar">AG</span>
+              <button type="button" className="profile-compact" onClick={openAccount} aria-label="Apri account e prodotti acquistati">
+                <span className="avatar">{account?.user?.initials ?? <UserRound size={16} />}</span>
                 <ChevronDown size={15} />
               </button>
             </div>
@@ -1600,6 +1694,99 @@ export default function HomePage() {
               }}>
                 {selectedProduct.detailUrl ? "Scopri Risonix" : "Prova gratis"} <ArrowRight size={17} />
               </button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {accountOpen && (
+        <div
+          className="account-overlay"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setAccountOpen(false);
+          }}
+        >
+          <section className="account-panel" role="dialog" aria-modal="true" aria-labelledby="account-title">
+            <div className="account-panel__header">
+              <div className="account-identity">
+                <span className="avatar">{account?.user?.initials ?? "KR"}</span>
+                <div>
+                  <small>ACCOUNT KRELUNA</small>
+                  <h2 id="account-title">{account?.user?.displayName ?? "I miei prodotti"}</h2>
+                  {account?.user?.email && <p>{account.user.email}</p>}
+                </div>
+              </div>
+              <button type="button" onClick={() => setAccountOpen(false)} aria-label="Chiudi account"><X size={20} /></button>
+            </div>
+
+            <div className="account-panel__content">
+              {productsLoading ? (
+                <div className="account-loading"><RefreshCcw size={22} /> Controllo acquisti e licenze…</div>
+              ) : ownedProducts.length ? (
+                ownedProducts.map((product) => (
+                  <article className="owned-product" key={`${product.id}-${product.purchasedAt}`}>
+                    <div className="owned-product__title">
+                      <span className="product-icon tone-risonix"><AudioWaveform size={24} /></span>
+                      <div>
+                        <small>ACQUISTO CONFERMATO</small>
+                        <h3>{product.name}</h3>
+                        <p>Licenza personale · 1 dispositivo · versione 1.0.0</p>
+                      </div>
+                      <CircleCheck size={22} />
+                    </div>
+                    <div className="license-box">
+                      <div>
+                        <small>CODICE DI ATTIVAZIONE</small>
+                        <strong>{product.licenseKey ?? "Preparazione in corso"}</strong>
+                      </div>
+                      {product.licenseKey && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void navigator.clipboard.writeText(product.licenseKey ?? "");
+                            announce("Codice licenza copiato");
+                          }}
+                        >
+                          Copia
+                        </button>
+                      )}
+                    </div>
+                    <div className="download-grid">
+                      <a
+                        className={product.downloads.macos.available ? "download-card" : "download-card disabled"}
+                        href={product.downloads.macos.url ?? undefined}
+                        aria-disabled={!product.downloads.macos.available}
+                      >
+                        <strong>Scarica per Mac</strong>
+                        <span>{product.downloads.macos.label}</span>
+                        <small>DMG firmato e notarizzato Apple</small>
+                      </a>
+                      <a
+                        className={product.downloads.windows.available ? "download-card" : "download-card disabled"}
+                        href={product.downloads.windows.url ?? undefined}
+                        aria-disabled={!product.downloads.windows.available}
+                      >
+                        <strong>Scarica per Windows</strong>
+                        <span>{product.downloads.windows.label}</span>
+                        <small>{product.downloads.windows.available ? "Installer MSI" : "Firma Windows in preparazione"}</small>
+                      </a>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <div className="account-empty-products">
+                  <span><PackageCheck size={28} /></span>
+                  <h3>Nessun prodotto acquistato</h3>
+                  <p>Dopo il pagamento Risonix comparirà qui con licenza e download per il tuo dispositivo.</p>
+                  <button type="button" onClick={() => { setAccountOpen(false); scrollTo("prodotti"); }}>Scopri Risonix</button>
+                </div>
+              )}
+            </div>
+
+            <div className="account-panel__footer">
+              <span><ShieldCheck size={15} /> Download protetti e collegati al tuo acquisto</span>
+              {account?.signOutUrl && <a href={account.signOutUrl}>Esci dall’account</a>}
             </div>
           </section>
         </div>

@@ -2760,6 +2760,274 @@ input:focus-visible {
   margin-top: 19px;
 }
 
+.account-overlay {
+  position: fixed;
+  z-index: 115;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(5, 11, 24, 0.64);
+  backdrop-filter: blur(5px);
+  animation: fade-in 180ms ease both;
+}
+
+.account-panel {
+  width: min(100%, 720px);
+  max-height: min(88vh, 760px);
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 22px;
+  color: var(--ink);
+  background: #fff;
+  box-shadow: 0 35px 100px rgba(5, 11, 24, 0.34);
+  animation: modal-in 200ms ease both;
+}
+
+.account-panel__header,
+.account-panel__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 24px;
+}
+
+.account-panel__header {
+  border-bottom: 1px solid var(--border);
+}
+
+.account-panel__header > button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: #64748b;
+  background: #f8fafc;
+  cursor: pointer;
+}
+
+.account-identity {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.account-identity > .avatar {
+  width: 43px;
+  height: 43px;
+  flex: 0 0 auto;
+}
+
+.account-identity small,
+.owned-product__title small,
+.license-box small {
+  color: var(--blue);
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+}
+
+.account-identity h2 {
+  margin: 3px 0 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 20px;
+}
+
+.account-identity p {
+  margin: 0;
+  color: #8190a3;
+  font-size: 9.5px;
+}
+
+.account-panel__content {
+  padding: 22px 24px;
+}
+
+.account-loading,
+.account-empty-products {
+  min-height: 250px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  color: #718197;
+  text-align: center;
+  font-size: 11px;
+}
+
+.account-loading svg {
+  color: var(--blue);
+  animation: spin 900ms linear infinite;
+}
+
+.account-empty-products > span {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 16px;
+  color: var(--blue);
+  background: #edf4ff;
+}
+
+.account-empty-products h3,
+.account-empty-products p {
+  margin: 0;
+}
+
+.account-empty-products p {
+  max-width: 410px;
+  line-height: 1.6;
+}
+
+.account-empty-products button {
+  height: 40px;
+  border-radius: 10px;
+  padding: 0 16px;
+  color: #fff;
+  background: var(--blue);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.owned-product {
+  border: 1px solid #e4eaf2;
+  border-radius: 17px;
+  padding: 18px;
+  background: linear-gradient(145deg, #fff, #f8fbff);
+}
+
+.owned-product__title {
+  display: grid;
+  grid-template-columns: 46px 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.owned-product__title .product-icon {
+  width: 46px;
+  height: 46px;
+}
+
+.owned-product__title h3 {
+  margin: 3px 0 2px;
+  font-size: 19px;
+}
+
+.owned-product__title p {
+  margin: 0;
+  color: #7d8ca0;
+  font-size: 9.5px;
+}
+
+.owned-product__title > svg {
+  color: #16a276;
+}
+
+.license-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 17px;
+  border: 1px solid #dce7f7;
+  border-radius: 12px;
+  padding: 13px 14px;
+  background: #f4f8ff;
+}
+
+.license-box strong {
+  display: block;
+  margin-top: 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.license-box button {
+  height: 34px;
+  border: 1px solid #cfdcf0;
+  border-radius: 9px;
+  padding: 0 12px;
+  color: var(--blue);
+  background: #fff;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.download-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.download-card {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #dce6f4;
+  border-radius: 12px;
+  padding: 14px;
+  color: #27486f;
+  background: #fff;
+  transition: transform 160ms ease, border-color 160ms ease;
+}
+
+.download-card:hover {
+  border-color: #8fb7f2;
+  transform: translateY(-2px);
+}
+
+.download-card strong {
+  color: var(--blue);
+  font-size: 11px;
+}
+
+.download-card span {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.download-card small {
+  color: #8492a5;
+  font-size: 8.5px;
+}
+
+.download-card.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.account-panel__footer {
+  border-top: 1px solid var(--border);
+  color: #738297;
+  font-size: 9px;
+}
+
+.account-panel__footer span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.account-panel__footer svg {
+  color: #16a276;
+}
+
+.account-panel__footer a {
+  color: var(--blue);
+  font-weight: 750;
+}
+
 .toast {
   position: fixed;
   z-index: 150;
@@ -2807,6 +3075,10 @@ input:focus-visible {
 @keyframes modal-in {
   from { opacity: 0; transform: translateY(12px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 1220px) {
@@ -2990,7 +3262,6 @@ input:focus-visible {
 
   .topbar-inner > .search-wrap,
   .topbar-actions .topbar-icon:first-child,
-  .topbar-actions .profile-compact,
   .cart-button span {
     display: none;
   }
@@ -3721,8 +3992,43 @@ input:focus-visible {
     font-size: 7px;
   }
 
+  .account-overlay {
+    align-items: end;
+    padding: 0;
+  }
+
+  .account-panel {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 22px 22px 0 0;
+  }
+
+  .account-panel__header,
+  .account-panel__content,
+  .account-panel__footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .download-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-panel__footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .toast {
     bottom: 82px;
+  }
+}
+
+@media (max-width: 520px) {
+  .topbar-actions .language-switch,
+  .topbar-actions .platform-switch,
+  .topbar-actions .topbar-icon {
+    display: none;
   }
 }
 
