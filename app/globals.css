@@ -495,6 +495,12 @@ input:focus-visible {
   font-size: 10px;
 }
 
+.search-suggestions small.suggestion-platform {
+  margin-top: 4px;
+  color: #5c6b80;
+  font-size: 8.8px;
+}
+
 .search-suggestions p {
   margin: 4px;
   padding: 16px;
@@ -2498,6 +2504,11 @@ input:focus-visible {
   font-size: 8.5px;
 }
 
+.cart-item .cart-platform {
+  color: #5f6f86;
+  font-size: 8px;
+}
+
 .cart-item > p {
   margin: 0;
   color: #26354a;
@@ -2669,6 +2680,15 @@ input:focus-visible {
   color: #586a80;
   font-size: 12px;
   line-height: 1.6;
+}
+
+.modal-platform {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 12px;
+  color: #4f6788;
+  font-size: 9.5px;
 }
 
 .modal-feature-list {

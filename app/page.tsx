@@ -562,6 +562,7 @@ function SearchField({
                   <span>
                     <strong>{product.name}</strong>
                     <small>{product.category}</small>
+                    <small className="suggestion-platform">{platformBadge(product.platformSupport, locale)}</small>
                   </span>
                   <ChevronRight size={15} />
                 </button>
@@ -1491,7 +1492,11 @@ export default function HomePage() {
                 return (
                   <article className="cart-item" key={product.id}>
                     <span className={`mini-product-icon tone-${product.iconTone}`}><Icon size={19} /></span>
-                    <div><strong>{product.name}</strong><small>{product.trial}</small></div>
+                    <div>
+                      <strong>{product.name}</strong>
+                      <small>{product.trial}</small>
+                      <small className="cart-platform">{platformBadge(product.platformSupport, locale)}</small>
+                    </div>
                     <p>{product.price.toFixed(2).replace(".", ",")} €<small>{product.oneTime ? " una tantum" : "/mese"}</small></p>
                     <button type="button" onClick={() => setCart((current) => current.filter((id) => id !== product.id))} aria-label={`Rimuovi ${product.name}`}><Trash2 size={16} /></button>
                   </article>
@@ -1542,6 +1547,9 @@ export default function HomePage() {
               </div>
             </div>
             <p className="modal-description">{selectedProduct.description}</p>
+            <div className="modal-platform">
+              <CircleCheck size={16} /> {platformBadge(selectedProduct.platformSupport, locale)}
+            </div>
             <div className="modal-feature-list">
               <span><CircleCheck size={17} /> Configurazione guidata inclusa</span>
               <span><CircleCheck size={17} /> Aggiornamenti automatici</span>
