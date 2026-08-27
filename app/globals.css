@@ -2990,7 +2990,6 @@ input:focus-visible {
 
   .topbar-inner > .search-wrap,
   .topbar-actions .topbar-icon:first-child,
-  .topbar-actions .profile-compact,
   .cart-button span {
     display: none;
   }
@@ -3723,6 +3722,14 @@ input:focus-visible {
 
   .toast {
     bottom: 82px;
+  }
+}
+
+@media (max-width: 520px) {
+  .topbar-actions .language-switch,
+  .topbar-actions .platform-switch,
+  .topbar-actions .topbar-icon {
+    display: none;
   }
 }
 
