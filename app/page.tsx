@@ -41,6 +41,7 @@ type Locale = "it" | "en";
 
 const englishCopy: Record<string, string> = {
   "Vai al contenuto": "Skip to content",
+  "Vai al sito Kreluna": "Go to the Kreluna website",
   "ESPLORA": "EXPLORE",
   "SUPPORTO": "SUPPORT",
   "Home": "Home",
@@ -315,7 +316,7 @@ type Audience = "personal" | "business";
 
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
-    <div className={`brand ${compact ? "brand--compact" : ""}`}>
+    <a className={`brand ${compact ? "brand--compact" : ""}`} href="https://www.kreluna.it" aria-label="Vai al sito Kreluna">
       <span className="brand-bag" aria-hidden="true">
         <span>K</span>
       </span>
@@ -325,7 +326,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
           <small>STORE</small>
         </span>
       )}
-    </div>
+    </a>
   );
 }
 
