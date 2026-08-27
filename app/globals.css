@@ -1438,7 +1438,7 @@ input:focus-visible {
 
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
   gap: 12px;
 }
 
@@ -1555,6 +1555,17 @@ input:focus-visible {
   color: #fff;
   background: linear-gradient(145deg, #2563eb 0%, #7c3aed 48%, #e43ab6 100%);
   box-shadow: 0 8px 18px rgba(124, 58, 237, 0.2);
+}
+
+.tone-risonix {
+  color: #06232c;
+  background: linear-gradient(145deg, #29e4de 0%, #62ded0 46%, #d786ee 100%);
+  box-shadow: 0 9px 22px rgba(41, 228, 222, 0.22);
+}
+
+.rating-row--new {
+  color: #0f8b83;
+  font-weight: 750;
 }
 
 .products-heading {

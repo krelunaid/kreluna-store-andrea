@@ -3,6 +3,7 @@
 import {
   ArrowRight,
   BarChart3,
+  AudioWaveform,
   Bell,
   Boxes,
   Building2,
@@ -48,8 +49,8 @@ type Product = {
   categoryId: string;
   description: string;
   price: number;
-  rating: string;
-  reviews: number;
+  rating?: string;
+  reviews?: number;
   badge: string;
   badgeTone: "blue" | "orange" | "purple" | "green";
   trial: string;
@@ -57,9 +58,19 @@ type Product = {
   iconTone: string;
   popular?: boolean;
   isNew?: boolean;
+  oneTime?: boolean;
+  detailUrl?: string;
 };
 
 const categories = [
+  {
+    id: "music-audio",
+    label: "Musica & audio",
+    shortLabel: "Musica & audio",
+    icon: AudioWaveform,
+    tone: "risonix",
+    count: 1,
+  },
   {
     id: "ecommerce",
     label: "Vendite & e-commerce",
@@ -111,6 +122,23 @@ const categories = [
 ];
 
 const products: Product[] = [
+  {
+    id: "risonix",
+    name: "Risonix",
+    category: "Musica & audio",
+    categoryId: "music-audio",
+    description: "Riconosci i brani della tua raccolta con impronta acustica e confronto locale.",
+    price: 49,
+    badge: "Kreluna originale",
+    badgeTone: "green",
+    trial: "1 licenza · 1 dispositivo",
+    icon: AudioWaveform,
+    iconTone: "risonix",
+    popular: true,
+    isNew: true,
+    oneTime: true,
+    detailUrl: "https://www.kreluna.it/risonix",
+  },
   {
     id: "invoice-flow",
     name: "InvoiceFlow",
@@ -963,17 +991,23 @@ export default function HomePage() {
                         <h3>{product.name}</h3>
                         <p>{product.description}</p>
                       </div>
-                      <div className="rating-row">
-                        <span className="stars" aria-label={`Valutazione ${product.rating} su 5`}>
-                          <Star size={14} fill="currentColor" /> {product.rating}
-                        </span>
-                        <span>{product.reviews} recensioni</span>
-                      </div>
+                      {product.rating ? (
+                        <div className="rating-row">
+                          <span className="stars" aria-label={`Valutazione ${product.rating} su 5`}>
+                            <Star size={14} fill="currentColor" /> {product.rating}
+                          </span>
+                          <span>{product.reviews} recensioni</span>
+                        </div>
+                      ) : (
+                        <div className="rating-row rating-row--new">
+                          <Sparkles size={14} /> Nuovo nel Kreluna Store
+                        </div>
+                      )}
                       <div className="trial-row"><CircleCheck size={14} /> {product.trial}</div>
                       <div className="product-footer">
                         <div className="price">
                           <strong>{product.price.toFixed(2).replace(".", ",")} €</strong>
-                          <small>/mese</small>
+                          <small>{product.oneTime ? "una tantum" : "/mese"}</small>
                         </div>
                         <div className="product-actions">
                           <button type="button" className="details-button" onClick={() => setSelectedProduct(product)}>
@@ -1141,7 +1175,7 @@ export default function HomePage() {
                   <article className="cart-item" key={product.id}>
                     <span className={`mini-product-icon tone-${product.iconTone}`}><Icon size={19} /></span>
                     <div><strong>{product.name}</strong><small>{product.trial}</small></div>
-                    <p>{product.price.toFixed(2).replace(".", ",")} €<small>/mese</small></p>
+                    <p>{product.price.toFixed(2).replace(".", ",")} €<small>{product.oneTime ? " una tantum" : "/mese"}</small></p>
                     <button type="button" onClick={() => setCart((current) => current.filter((id) => id !== product.id))} aria-label={`Rimuovi ${product.name}`}><Trash2 size={16} /></button>
                   </article>
                 );
@@ -1156,8 +1190,8 @@ export default function HomePage() {
             </div>
             {cartProducts.length > 0 && (
               <div className="drawer-footer">
-                <div><span>Totale mensile</span><strong>{cartTotal.toFixed(2).replace(".", ",")} €</strong></div>
-                <p><ShieldCheck size={14} /> Nessun addebito durante la prova gratuita.</p>
+                <div><span>Totale del carrello</span><strong>{cartTotal.toFixed(2).replace(".", ",")} €</strong></div>
+                <p><ShieldCheck size={14} /> Prezzi e condizioni sono mostrati prima del pagamento.</p>
                 <button type="button" onClick={() => announce("Il checkout sarà collegato nel prossimo passaggio") }>
                   Procedi all’attivazione <ArrowRight size={17} />
                 </button>
@@ -1182,7 +1216,7 @@ export default function HomePage() {
               <div>
                 <span>{selectedProduct.category}</span>
                 <h2 id="modal-product-title">{selectedProduct.name}</h2>
-                <p><Star size={14} fill="currentColor" /> {selectedProduct.rating} · {selectedProduct.reviews} recensioni</p>
+                <p>{selectedProduct.rating ? <><Star size={14} fill="currentColor" /> {selectedProduct.rating} · {selectedProduct.reviews} recensioni</> : <><Sparkles size={14} /> Novità Kreluna</>}</p>
               </div>
             </div>
             <p className="modal-description">{selectedProduct.description}</p>
@@ -1192,7 +1226,7 @@ export default function HomePage() {
               <span><CircleCheck size={17} /> Assistenza Kreluna verificata</span>
             </div>
             <div className="modal-price-row">
-              <div><small>A partire da</small><strong>{selectedProduct.price.toFixed(2).replace(".", ",")} € <span>/mese</span></strong></div>
+              <div><small>{selectedProduct.oneTime ? "Prezzo completo" : "A partire da"}</small><strong>{selectedProduct.price.toFixed(2).replace(".", ",")} € <span>{selectedProduct.oneTime ? "una tantum" : "/mese"}</span></strong></div>
               <span className="modal-trial"><Gift size={16} /> {selectedProduct.trial}</span>
             </div>
             <div className="modal-actions">
@@ -1200,8 +1234,16 @@ export default function HomePage() {
                 <Heart size={17} fill={favorites.has(selectedProduct.id) ? "currentColor" : "none"} />
                 {favorites.has(selectedProduct.id) ? "Nei preferiti" : "Salva"}
               </button>
-              <button type="button" className="button button--primary" onClick={() => { addToCart(selectedProduct); setSelectedProduct(null); setCartOpen(true); }}>
-                Prova gratis <ArrowRight size={17} />
+              <button type="button" className="button button--primary" onClick={() => {
+                if (selectedProduct.detailUrl) {
+                  window.location.href = selectedProduct.detailUrl;
+                  return;
+                }
+                addToCart(selectedProduct);
+                setSelectedProduct(null);
+                setCartOpen(true);
+              }}>
+                {selectedProduct.detailUrl ? "Scopri Risonix" : "Prova gratis"} <ArrowRight size={17} />
               </button>
             </div>
           </section>
