@@ -3,6 +3,7 @@ export type CheckoutCatalogItem = {
   name: string;
   priceCents: number;
   currency: "eur";
+  taxCode: string;
   description?: string;
   cadence?: "one-time" | "monthly";
 };
@@ -13,6 +14,7 @@ export const checkoutCatalog: CheckoutCatalogItem[] = [
     name: "Risonix",
     priceCents: 4900,
     currency: "eur",
+    taxCode: "txcd_10202000",
     description: "Riconosci i brani della tua raccolta con impronta acustica e confronto locale.",
     cadence: "one-time",
   },
@@ -21,6 +23,7 @@ export const checkoutCatalog: CheckoutCatalogItem[] = [
     name: "Kreluna+ Basic",
     priceCents: 990,
     currency: "eur",
+    taxCode: "txcd_10103000",
     description: "Piano Kreluna+ Basic con 5€ di crediti mensili e sconto fino al 15%.",
     cadence: "monthly",
   },
@@ -29,6 +32,7 @@ export const checkoutCatalog: CheckoutCatalogItem[] = [
     name: "Kreluna+ Pro",
     priceCents: 1990,
     currency: "eur",
+    taxCode: "txcd_10103000",
     description: "Piano Kreluna+ Pro con 20€ di crediti mensili e funzioni esclusive.",
     cadence: "monthly",
   },

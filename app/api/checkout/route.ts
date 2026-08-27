@@ -38,6 +38,10 @@ function encodeLineItems(form: URLSearchParams, items: CheckoutItemInput[]) {
       `${base}[price_data][product_data][name]`,
       catalogItem.name,
     );
+    form.append(
+      `${base}[price_data][product_data][tax_code]`,
+      catalogItem.taxCode,
+    );
     if (catalogItem.description) {
       form.append(
         `${base}[price_data][product_data][description]`,
