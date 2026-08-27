@@ -259,9 +259,21 @@ const filterOptions = [
 ] as const;
 
 const launchBenefits = [
-  { icon: ShieldCheck, text: "Gestione centralizzata ruoli, permessi e team" },
-  { icon: Clock3, text: "Avvio rapido in pochi giorni, niente sviluppo complesso" },
-  { icon: RefreshCcw, text: "Aggiornamenti continui e rollout semplificato" },
+  {
+    icon: Grid2X2,
+    title: "Organizzazione dei prodotti",
+    text: "Un catalogo strutturato per gestire l'intero assortimento in un unico spazio.",
+  },
+  {
+    icon: PackageCheck,
+    title: "Gestione degli ordini",
+    text: "Ordini monitorati e organizzati, dalla ricezione alla consegna.",
+  },
+  {
+    icon: LifeBuoy,
+    title: "Supporto dedicato",
+    text: "Assistenza pensata per team e brand che lavorano insieme.",
+  },
 ] as const;
 
 type FilterId = (typeof filterOptions)[number]["id"];
@@ -760,54 +772,72 @@ export default function HomePage() {
           </section>
 
           <section id="lancio" className="section-block launch-section" aria-labelledby="launch-title">
-            <div className="section-heading launch-heading">
-              <div>
-                <span className="section-kicker">Novità per aziende</span>
-                <h2 id="launch-title">Nuovo servizio in arrivo</h2>
-                <p>Stiamo per lanciare il nostro servizio premium per aziende.</p>
-              </div>
-              <button
-                type="button"
-                className="text-link"
-                onClick={() => scrollTo("kreluna-plus")}
-              >
-                Scopri come funziona <ArrowRight size={16} />
-              </button>
+            <div className="launch-heading">
+              <span className="launch-badge launch-badge--top">
+                <Sparkles size={12} /> Novità
+              </span>
+              <h2 id="launch-title">Nuovo servizio in arrivo</h2>
+              <p className="launch-headline">
+                Stiamo per lanciare il nostro servizio premium per aziende
+              </p>
+              <p className="launch-description">
+                Versione business del nostro store, con gestione prodotti, ordini e supporto
+                dedicato per team e brand.
+              </p>
             </div>
 
             <div className="launch-layout">
-              <article className="launch-card" aria-label="Anteprima servizio">
-                <span className="launch-badge">Prossimamente</span>
-                <h3>Versione Business di Kreluna Store</h3>
-                <p>
-                  Stiamo preparando una piattaforma completa per team e brand, con gestione
-                  prodotti, ordini e supporto dedicato, pensata per chi lavora in gruppo.
-                </p>
-                <div className="launch-benefits">
+              <article className="launch-card" aria-label="Vantaggi del nuovo servizio Business">
+                <ul className="launch-benefits">
                   {launchBenefits.map((item) => {
                     const Icon = item.icon;
                     return (
-                      <span key={item.text}>
-                        <Icon size={16} /> {item.text}
-                      </span>
+                      <li key={item.title}>
+                        <span className="launch-benefit-icon" aria-hidden="true">
+                          <Icon size={17} />
+                        </span>
+                        <span>
+                          <strong>{item.title}</strong>
+                          <small>{item.text}</small>
+                        </span>
+                      </li>
                     );
                   })}
-                </div>
-                <div className="launch-dates">
-                  <span>Prossimamente</span>
-                  <strong>Entro 30 ottobre 2026</strong>
-                </div>
+                </ul>
+
                 <div className="launch-actions">
-                  <button type="button" className="button button--primary" onClick={() => announce("Il flusso servizio verrà collegato nel prossimo passaggio")}>
+                  <button
+                    type="button"
+                    className="button button--primary"
+                    onClick={() => scrollTo("come-funziona")}
+                  >
                     Scopri come funziona
                   </button>
-                  <button type="button" className="button button--secondary" onClick={() => announce("Puoi contattarci dal form qui sotto")}>
+                  <button
+                    type="button"
+                    className="button button--secondary"
+                    onClick={() => scrollTo("store-business-form")}
+                  >
                     Contattaci
                   </button>
                 </div>
+
+                <div className="launch-dates">
+                  <span>Prossimamente</span>
+                  <strong>Data di lancio in definizione</strong>
+                </div>
               </article>
 
-              <form className="launch-form" onSubmit={handleLaunchSubmit}>
+              <form
+                id="store-business-form"
+                className="launch-form"
+                onSubmit={handleLaunchSubmit}
+                aria-label="Ricevi un avviso al lancio del servizio Business"
+              >
+                <p className="launch-form-intro">
+                  Lasciaci i tuoi dati: ti avviseremo non appena il servizio sarà disponibile.
+                </p>
+
                 <label htmlFor="launch-name">Nome</label>
                 <input
                   id="launch-name"
@@ -815,6 +845,7 @@ export default function HomePage() {
                   value={launchName}
                   onChange={(event) => setLaunchName(event.target.value)}
                   placeholder="Il tuo nome"
+                  autoComplete="name"
                   required
                 />
 
@@ -825,39 +856,42 @@ export default function HomePage() {
                   value={launchEmail}
                   onChange={(event) => setLaunchEmail(event.target.value)}
                   placeholder="nome@azienda.it"
+                  autoComplete="email"
                   required
                 />
 
-                <label htmlFor="launch-message">Ti interessa anche questo messaggio?</label>
+                <label htmlFor="launch-message">Messaggio</label>
                 <textarea
                   id="launch-message"
                   value={launchMessage}
                   onChange={(event) => setLaunchMessage(event.target.value)}
-                  placeholder="Scrivici il tuo settore e riceverai un aggiornamento prioritario."
+                  placeholder="Raccontaci brevemente le tue esigenze."
                   required
                 />
 
-                <label>Interessa a:</label>
-                <div className="launch-audience">
-                  <label>
-                    <input
-                      type="radio"
-                      name="launch-audience"
-                      checked={launchAudience === "te"}
-                      onChange={() => setLaunchAudience("te")}
-                    />
-                    Per te
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="launch-audience"
-                      checked={launchAudience === "azienda"}
-                      onChange={() => setLaunchAudience("azienda")}
-                    />
-                    Per la tua azienda
-                  </label>
-                </div>
+                <fieldset className="launch-audience-fieldset">
+                  <legend>Interessa a:</legend>
+                  <div className="launch-audience">
+                    <label>
+                      <input
+                        type="radio"
+                        name="launch-audience"
+                        checked={launchAudience === "te"}
+                        onChange={() => setLaunchAudience("te")}
+                      />
+                      Per te
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="launch-audience"
+                        checked={launchAudience === "azienda"}
+                        onChange={() => setLaunchAudience("azienda")}
+                      />
+                      Per la tua azienda
+                    </label>
+                  </div>
+                </fieldset>
 
                 <button type="submit" className="button button--primary">
                   Ti facciamo sapere quando parte
@@ -1081,22 +1115,30 @@ export default function HomePage() {
             </div>
           </section>
 
-          <section className="journey" aria-label="Come funziona Kreluna Store">
-            {[
-              { icon: Search, label: "Scopri", text: "Trova l’app giusta" },
-              { icon: Zap, label: "Attiva", text: "In pochi clic" },
-              { icon: PackageCheck, label: "Usa", text: "Tutto insieme" },
-              { icon: Rocket, label: "Cresci", text: "Fai evolvere il business" },
-            ].map((step, index) => {
-              const Icon = step.icon;
-              return (
-                <div className="journey-step" key={step.label}>
-                  <span className="journey-icon"><Icon size={20} /></span>
-                  <div><strong>{step.label}</strong><small>{step.text}</small></div>
-                  {index < 3 && <ChevronRight className="journey-arrow" size={18} />}
-                </div>
-              );
-            })}
+          <section id="come-funziona" className="section-block" aria-labelledby="come-funziona-title">
+            <div className="section-heading">
+              <div>
+                <span className="section-kicker">Come funziona</span>
+                <h2 id="come-funziona-title">Un percorso semplice, dalla scoperta alla crescita</h2>
+              </div>
+            </div>
+            <div className="journey" aria-label="Passaggi per iniziare a usare Kreluna Store">
+              {[
+                { icon: Search, label: "Scopri", text: "Trova l’app giusta" },
+                { icon: Zap, label: "Attiva", text: "In pochi clic" },
+                { icon: PackageCheck, label: "Usa", text: "Tutto insieme" },
+                { icon: Rocket, label: "Cresci", text: "Fai evolvere il business" },
+              ].map((step, index) => {
+                const Icon = step.icon;
+                return (
+                  <div className="journey-step" key={step.label}>
+                    <span className="journey-icon"><Icon size={20} /></span>
+                    <div><strong>{step.label}</strong><small>{step.text}</small></div>
+                    {index < 3 && <ChevronRight className="journey-arrow" size={18} />}
+                  </div>
+                );
+              })}
+            </div>
           </section>
 
           <footer className="footer">
