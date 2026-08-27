@@ -34,6 +34,7 @@ function encodeLineItems(form: URLSearchParams, items: CheckoutItemInput[]) {
     const base = `line_items[${index}]`;
 
     form.append(`${base}[price_data][currency]`, catalogItem.currency);
+    form.append(`${base}[price_data][tax_behavior]`, "inclusive");
     form.append(
       `${base}[price_data][product_data][name]`,
       catalogItem.name,
