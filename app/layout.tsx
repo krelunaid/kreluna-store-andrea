@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    "https://kreluna-store-andrea.andreagadducci.chatgpt.site",
+    "https://store.kreluna.it",
   ),
   title: "Kreluna Store — Tutto il software che ti fa andare avanti",
   description:
