@@ -4,14 +4,14 @@ import test from "node:test";
 
 const templateRoot = new URL("../", import.meta.url);
 
-async function render() {
+async function render(pathname = "/", accept = "text/html") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
 
   return worker.fetch(
-    new Request("http://localhost/", {
-      headers: { accept: "text/html" },
+    new Request(new URL(pathname, "http://localhost"), {
+      headers: { accept },
     }),
     {
       ASSETS: {
@@ -24,6 +24,24 @@ async function render() {
     },
   );
 }
+
+test("publishes canonical SEO discovery files", async () => {
+  const [sitemapResponse, robotsResponse] = await Promise.all([
+    render("/sitemap.xml", "application/xml"),
+    render("/robots.txt", "text/plain"),
+  ]);
+
+  assert.equal(sitemapResponse.status, 200);
+  assert.match(sitemapResponse.headers.get("content-type") ?? "", /xml/i);
+  assert.match(await sitemapResponse.text(), /https:\/\/store\.kreluna\.it\//);
+
+  assert.equal(robotsResponse.status, 200);
+  assert.match(robotsResponse.headers.get("content-type") ?? "", /text\/plain/i);
+  const robots = await robotsResponse.text();
+  assert.match(robots, /Allow: \//);
+  assert.match(robots, /Disallow: \/api\//);
+  assert.match(robots, /Sitemap: https:\/\/store\.kreluna\.it\/sitemap\.xml/);
+});
 
 test("renders the Kreluna Store experience", async () => {
   const response = await render();
