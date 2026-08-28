@@ -25,6 +25,13 @@ export const metadata: Metadata = {
     "app business",
     "marketplace software",
   ],
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
     title: "Kreluna Store",
     description: "Per te. Per la tua azienda. Infinite soluzioni in un unico marketplace.",
