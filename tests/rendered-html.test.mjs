@@ -75,3 +75,17 @@ test("delegates Risonix purchases to the protected Kreluna checkout", async () =
     "Risonix must be delegated before the generic Stripe checkout is configured",
   );
 });
+
+test("routes the Store profile to a general Kreluna account", async () => {
+  const [storePage, accountPage] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/account/page.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(storePage, /const ACCOUNT_URL = "\/account"/);
+  assert.match(storePage, /Account Kreluna/);
+  assert.doesNotMatch(storePage, /window\.location\.assign\(RISONIX_ACCOUNT_URL\)/);
+  assert.match(accountPage, /requireChatGPTUser\("\/account"\)/);
+  assert.match(accountPage, /Il tuo account Kreluna/);
+  assert.match(accountPage, /Gestisci Risonix/);
+});

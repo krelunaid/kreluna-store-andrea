@@ -43,7 +43,7 @@ type Locale = "it" | "en" | "fr" | "de" | "es";
 const LOCALE_STORAGE_KEY = "kreluna-locale";
 const SUPPORTED_LOCALES: Locale[] = ["it", "en", "fr", "de", "es"];
 const CANONICAL_HOST = "store.kreluna.it";
-const RISONIX_ACCOUNT_URL = "https://www.kreluna.it/risonix/account";
+const ACCOUNT_URL = "/account";
 
 const LOCALE_OPTIONS: Record<
   Locale,
@@ -824,7 +824,7 @@ export default function HomePage() {
     if (id === "home") window.scrollTo({ top: 0, behavior: "smooth" });
     else if (id === "categorie") scrollTo("categorie");
     else if (id === "consigliati") scrollTo("prodotti");
-    else if (id === "prodotti") window.location.assign(RISONIX_ACCOUNT_URL);
+    else if (id === "prodotti") window.location.assign(ACCOUNT_URL);
     else if (id === "preferiti") {
       setQuery("");
       setActiveCategory("all");
@@ -906,11 +906,11 @@ export default function HomePage() {
           </button>
         </div>
 
-        <button className="sidebar-profile" type="button" onClick={() => window.location.assign(RISONIX_ACCOUNT_URL)}>
+        <button className="sidebar-profile" type="button" onClick={() => window.location.assign(ACCOUNT_URL)}>
           <span className="avatar"><UserRound size={17} /></span>
           <span>
-            <strong>Account Risonix</strong>
-            <small>Licenze e download</small>
+            <strong>Account Kreluna</strong>
+            <small>Prodotti e servizi</small>
           </span>
           <ChevronRight size={16} />
         </button>
@@ -997,7 +997,7 @@ export default function HomePage() {
                 <span>Carrello</span>
                 {cart.length > 0 && <small>{cart.length}</small>}
               </button>
-              <button type="button" className="profile-compact" onClick={() => window.location.assign(RISONIX_ACCOUNT_URL)} aria-label="Apri account Risonix, licenze e download">
+              <button type="button" className="profile-compact" onClick={() => window.location.assign(ACCOUNT_URL)} aria-label="Apri account Kreluna">
                 <span className="avatar"><UserRound size={16} /></span>
                 <ChevronDown size={15} />
               </button>
